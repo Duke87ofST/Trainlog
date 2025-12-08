@@ -217,11 +217,11 @@ from src.trips import (
     create_trip,
     duplicate_trip,
     update_trip,
-    _update_trip_in_sqlite,
     delete_trip,
     update_trip_type,
     attach_ticket_to_trips,
-    delete_ticket_from_db
+    change_trips_visibility,
+    delete_ticket_from_db,
 )
 from src.paths import Path
 from src.carbon import *
@@ -734,6 +734,7 @@ def saveTripToDb(username, newTrip, newPath, trip_type="train"):
         ticket_id=sanitize_param(newTrip["ticket_id"]),
         is_project=start_datetime == 1 or end_datetime == 1,
         path=newPath,
+        visibility=sanitize_param(newTrip["visibility"])
     )
 
     create_trip(trip)
@@ -1110,6 +1111,8 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationStationName"
         ]
+        trip_visibility="public"
+
     elif vehicle_type == "tram":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
         new_trip = lang[session["userinfo"]["lang"]]["newTripTram"]
@@ -1119,6 +1122,8 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationStationName"
         ]
+        trip_visibility="public"
+
     elif vehicle_type == "metro":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
         new_trip = lang[session["userinfo"]["lang"]]["newTripMetro"]
@@ -1128,6 +1133,8 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationStationName"
         ]
+        trip_visibility="public"
+
     elif vehicle_type == "bus":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
         new_trip = lang[session["userinfo"]["lang"]]["newTripBus"]
@@ -1139,6 +1146,8 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationBusStationName"
         ]
+        trip_visibility="public"
+
     elif vehicle_type == "ferry":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
         new_trip = lang[session["userinfo"]["lang"]]["newTripFerry"]
@@ -1152,6 +1161,7 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationFerryTerminalName"
         ]
+        trip_visibility="public"
 
     elif vehicle_type == "accommodation":
         new_trip = lang[session["userinfo"]["lang"]]["newAccommodation"]
@@ -1160,6 +1170,7 @@ def new(username, vehicle_type):
         manual_origin = lang[session["userinfo"]["lang"]]["manualAccommodation"]
         destination_terminal = ""
         destination_terminal_name = ""
+        trip_visibility="private"
 
     elif vehicle_type == "poi":
         new_trip = lang[session["userinfo"]["lang"]]["newPoi"]
@@ -1168,6 +1179,7 @@ def new(username, vehicle_type):
         manual_origin = lang[session["userinfo"]["lang"]]["manualPoi"]
         destination_terminal = ""
         destination_terminal_name = ""
+        trip_visibility="private"
 
     elif vehicle_type == "restaurant":
         new_trip = lang[session["userinfo"]["lang"]]["newRestaurant"]
@@ -1176,6 +1188,7 @@ def new(username, vehicle_type):
         manual_origin = lang[session["userinfo"]["lang"]]["manualRestaurant"]
         destination_terminal = ""
         destination_terminal_name = ""
+        trip_visibility="private"
 
     elif vehicle_type == "helicopter":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
@@ -1186,6 +1199,7 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationHelipadName"
         ]
+        trip_visibility="private"
 
     elif vehicle_type == "car":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
@@ -1196,6 +1210,7 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationCarName"
         ]
+        trip_visibility="private"
 
     elif vehicle_type == "walk":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
@@ -1206,6 +1221,7 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationWalkName"
         ]
+        trip_visibility="private"
 
     elif vehicle_type == "cycle":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
@@ -1216,6 +1232,7 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationBikeName"
         ]
+        trip_visibility="private"
 
     elif vehicle_type == "aerialway":
         manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
@@ -1226,6 +1243,7 @@ def new(username, vehicle_type):
         destination_terminal_name = lang[session["userinfo"]["lang"]][
             "destinationAerialwayName"
         ]
+        trip_visibility="public"
 
     return render_template(
         "new.html",
@@ -1239,6 +1257,7 @@ def new(username, vehicle_type):
         originTerminalName=origin_terminal_name,
         destinationTerminal=destination_terminal,
         destinationTerminalName=destination_terminal_name,
+        trip_visibility=trip_visibility,
         manualOrigin=manual_origin,
         currencyOptions=get_available_currencies(),
         user_currency=getLoggedUserCurrency(),
@@ -2259,6 +2278,23 @@ def attachSelected(username):
         logger.exception(error)
         return jsonify({"error": "An error occurred while attaching the ticket"}), 500
 
+@app.route("/u/<username>/bulkChangeVisibility")
+@login_required
+def bulkChangeVisibility(username):
+    trip_ids = request.args.get("trips")
+    visibility = request.args.get("visibility")
+
+    if not trip_ids or visibility not in ("public", "friends", "private"):
+        return jsonify({"error": "Missing parameters"}), 400
+
+    trip_id_list = trip_ids.split(",")
+    success, error = change_trips_visibility(username, visibility, trip_id_list)
+
+    if success:
+        return jsonify({"success": 1}), 200
+    else:
+        logger.exception(error)
+        return jsonify({"error": "An error occured while changing the visibility"}), 500
 
 @app.route("/u/<username>/toggle_ticket_active/<ticket_id>")
 @login_required
@@ -4246,6 +4282,11 @@ def update_trip_values_from_form_data(trip_id, formData, update_created_ts=False
 
     created = datetime.now() if update_created_ts else original_trip.created
 
+    if "visibility" in formData:
+        visibility = sanitize_param(formData["visibility"])
+    else:
+        visibility = None
+
     trip = Trip(
         username=getUser(),
         user_id=get_user_id(getUser()),
@@ -4279,6 +4320,7 @@ def update_trip_values_from_form_data(trip_id, formData, update_created_ts=False
         ticket_id=sanitize_param(formData.get("ticket_id")),
         is_project=start_datetime == 1 or end_datetime == 1,
         path=path,
+        visibility=visibility if visibility != "" else None
     )
 
     return trip
@@ -5226,6 +5268,24 @@ def delete_user(uid):
 def fetchTripsPaths(username, lastLocal, public):
     tripList = []
     now = datetime.now()
+
+    currentUser = getUser()
+    if currentUser != 'public':
+        currentUserId = User.query.filter_by(username=currentUser).first().uid
+        targetUserId = (
+            authDb.session.query(User.uid, User.username)
+            .filter(User.username == username)
+            .first().uid
+        )
+        is_friend = (
+            authDb.session.query(User.uid, User.username)
+            .join(Friendship, User.uid == Friendship.friend_id)
+            .filter(Friendship.user_id == targetUserId, Friendship.friend_id == currentUserId, Friendship.accepted != None)
+            .first()
+        ) is not None
+    else:
+        is_friend = 0
+
     with managed_cursor(mainConn) as cursor:
         idList = [
             row["uid"]
@@ -5236,7 +5296,7 @@ def fetchTripsPaths(username, lastLocal, public):
 
         trips = cursor.execute(
             getUniqueUserTrips,
-            {"username": username, "lastLocal": lastLocal, "public": public},
+            {"username": username, "lastLocal": lastLocal, "public": public, "friend": is_friend},
         ).fetchall()
 
     trips.reverse()
@@ -5750,6 +5810,7 @@ def get_trips_api_internal(username, is_public=False):
         "operator",
         "line_name",
         "countries",
+        "visibility",
         "price",
         "material_type",
         "reg",
@@ -5824,6 +5885,13 @@ def get_trips_api_internal(username, is_public=False):
                     additional_conditions.append(f"LOWER(countries) = LOWER(:{param_name})")
                 else:
                     additional_conditions.append(f"remove_diacritics(LOWER(countries)) LIKE remove_diacritics(LOWER(:{param_name}))")
+            elif column_name == "visibility":
+                if is_exact and search_term == "":
+                    additional_conditions.append(f"visibility IS NULL")
+                elif is_exact:
+                    additional_conditions.append(f"LOWER(visibility) = LOWER(:{param_name})")
+                else:
+                    additional_conditions.append(f"remove_diacritics(LOWER(visibility)) LIKE remove_diacritics(LOWER(:{param_name}))")
             elif column_name == "material_type":
                 if is_exact:
                     additional_conditions.append(f"(LOWER(COALESCE(material_type, '')) = LOWER(:{param_name}) OR LOWER(iata) = LOWER(:{param_name}) OR LOWER(manufacturer) = LOWER(:{param_name}) OR LOWER(model) = LOWER(:{param_name}))")
@@ -6147,6 +6215,7 @@ def edit_copy_trip(username, tripId, edit_copy_type):
     destination = trip["destination_station"]
     tripOperator = trip["operator"]
     tripLineName = trip["line_name"]
+    tripVisibility = trip["visibility"]
     tripMaterialType = trip["material_type"]
     tripSeat = trip["seat"]
     tripReg = trip["reg"]
@@ -6211,6 +6280,7 @@ def edit_copy_trip(username, tripId, edit_copy_type):
         tripHours=tripHours or "",
         tripMinutes=tripMinutes or "",
         tripLineName=tripLineName or "",
+        tripVisibility=tripVisibility or "",
         tripMaterialType=tripMaterialType or "",
         tripSeat=tripSeat or "",
         tripReg=tripReg or "",
@@ -8942,7 +9012,7 @@ def get_current_trips_data(public_only=True):
             SELECT *
             FROM trip
             WHERE utc_start_datetime <= dateTime() AND utc_end_datetime >= dateTime()
-            AND type not in ('poi', 'accommodation', 'restaurant', 'walk', 'cycle', 'car')
+            AND (visibility = 'public' OR (visibility IS NULL AND type not in ('poi', 'accommodation', 'restaurant', 'walk', 'cycle', 'car')))
         """)
         trips = cursor.fetchall()
     
