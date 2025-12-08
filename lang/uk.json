@@ -603,6 +603,7 @@
     "smart_search_operator": "Оператор транспорту",
     "smart_search_line": "Назва лінії",
     "smart_search_country": "Відвідані країни (ISO3166-1 alpha2, напр.: FR, DE, NO)",
+    "smart_search_visibility": "видимість (public, friends, private)",
     "smart_search_material": "Тип/модель транспортного засобу",
     "smart_search_reg": "Реєстрація",
     "smart_search_notes": "Примітки до подорожі",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Ваш запит на функцію <a href='{url}'>#{request_id}</a> було закрито зі статусом: {status}.",
     "fr_email_reason_label": "Причина:",
     "fr_email_english_note": "Примітка: Технічні деталі та причини надаються англійською мовою, щоб забезпечити зрозумілість для нашої міжнародної аудиторії користувачів.",
-    "fr_email_signature": "З найкращими побажаннями<br>Команда Trainlog"
+    "fr_email_signature": "З найкращими побажаннями<br>Команда Trainlog",
+    "visibility": "Видимість",
+    "visibility_select": "Виберіть видимість",
+    "visibility_public": "Для всіх",
+    "visibility_friends": "Друзі",
+    "visibility_private": "Приватний",
+    "bulk_change_visibility": "Встановити видимість"
 }

@@ -603,6 +603,7 @@
     "smart_search_operator": "Transportoperatör",
     "smart_search_line": "Linjenamn",
     "smart_search_country": "Besökta länder (ISO3166-1 alpha2, ex: FR, DE, NO)",
+    "smart_search_visibility": "Synlighet (public, friends, private)",
     "smart_search_material": "Fordons typ/modell",
     "smart_search_reg": "Registrering",
     "smart_search_notes": "Resenoteringar",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Din funktionsförfrågan <a href='{url}'>#{request_id}</a> har stängts med status: {status}.",
     "fr_email_reason_label": "Orsak:",
     "fr_email_english_note": "Obs: Tekniska detaljer och orsaker ges på engelska för att säkerställa läsbarhet för vår internationella användarbas.",
-    "fr_email_signature": "Vänliga hälsningar<br>Trainlog-teamet"
+    "fr_email_signature": "Vänliga hälsningar<br>Trainlog-teamet",
+    "visibility": "Synlighet",
+    "visibility_select": "Välj synlighet",
+    "visibility_public": "Offentlig",
+    "visibility_friends": "Vänner",
+    "visibility_private": "Privat",
+    "bulk_change_visibility": "Ställ in synlighet"
 }

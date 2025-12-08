@@ -603,6 +603,7 @@
     "smart_search_operator": "Transportbetrieber",
     "smart_search_line": "Liniename",
     "smart_search_country": "Bsuuchti Länder (ISO3166-1 alpha2, z. B.: FR, DE, NO)",
+    "smart_search_visibility": "Sichtbarkeit (public, friends, private)",
     "smart_search_material": "Fahrzüügtyp/Modell",
     "smart_search_reg": "Registrierig",
     "smart_search_notes": "Rysnotize",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Din Funktion uusgfunge <a href='{url}'>#{request_id}</a> isch mit em Status: {status} gschlosse worde.",
     "fr_email_reason_label": "Grund:",
     "fr_email_english_note": "Note: Technisch Detail und Gründ wärde uf Englisch aagee, zum d'Lesbarkeit für üsi internationali Benutzerbasis sicherzstelle.",
-    "fr_email_signature": "Freundlichi Grüess<br>S Trainlog Team"
+    "fr_email_signature": "Freundlichi Grüess<br>S Trainlog Team",
+    "visibility": "Sichtbarkeit",
+    "visibility_select": "Sichtbarkeit auswählen",
+    "visibility_public": "Öffentlich",
+    "visibility_friends": "Freunde",
+    "visibility_private": "Privat",
+    "bulk_change_visibility": "Sichtbarkeit festlegen"
 }

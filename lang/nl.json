@@ -603,6 +603,7 @@
     "smart_search_operator": "Vervoersoperator",
     "smart_search_line": "Lijnnaam",
     "smart_search_country": "Bezochte landen (ISO3166-1 alpha2, bv.: FR, DE, NO)",
+    "smart_search_visibility": "Zichtbaarheid (public, friends, private)",
     "smart_search_material": "Voertuigtype/model",
     "smart_search_reg": "Registratie",
     "smart_search_notes": "Reisnotities",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Jouw functieverzoek <a href='{url}'>#{request_id}</a> is gesloten met de status: {status}.",
     "fr_email_reason_label": "Reden:",
     "fr_email_english_note": "Opmerking: Technische details en redenen worden in het Engels verstrekt om de leesbaarheid voor onze internationale gebruikersbasis te garanderen.",
-    "fr_email_signature": "Met vriendelijke groeten<br>Het Trainlog-team"
+    "fr_email_signature": "Met vriendelijke groeten<br>Het Trainlog-team",
+    "visibility": "Zichtbaarheid",
+    "visibility_select": "Selecteer zichtbaarheid",
+    "visibility_public": "Openbaar",
+    "visibility_friends": "Vrienden",
+    "visibility_private": "Privé",
+    "bulk_change_visibility": "Verander zichtbaarheid"
 }

@@ -603,6 +603,7 @@
     "smart_search_operator": "Transportoperatør",
     "smart_search_line": "Linjenavn",
     "smart_search_country": "Besøgte lande (ISO3166-1 alpha2, f.eks. FR, DE, NO)",
+    "smart_search_visibility": "Sigtbarhed (public, friends, private)",
     "smart_search_material": "Køretøjstype/model",
     "smart_search_reg": "Registrering",
     "smart_search_notes": "Rejsenotater",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Din funktionsanmodning <a href='{url}'>#{request_id}</a> er blevet lukket med status: {status}.",
     "fr_email_reason_label": "Årsag:",
     "fr_email_english_note": "Bemærk: Tekniske detaljer og årsager leveres på engelsk for at sikre læsbarhed for vores internationale brugerbase.",
-    "fr_email_signature": "Venlig hilsen<br>Trainlog-teamet"
+    "fr_email_signature": "Venlig hilsen<br>Trainlog-teamet",
+    "visibility": "Synlighed",
+    "visibility_select": "Vælg synlighed",
+    "visibility_public": "Offentlig",
+    "visibility_friends": "Venner",
+    "visibility_private": "Privat",
+    "bulk_change_visibility": "Indstil synlighed"
 }

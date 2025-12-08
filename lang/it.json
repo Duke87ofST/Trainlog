@@ -603,6 +603,7 @@
     "smart_search_operator": "Operatore di trasporto",
     "smart_search_line": "Nome della linea",
     "smart_search_country": "Paesi visitati (ISO3166-1 alpha2, es.: FR, DE, NO)",
+    "smart_search_visibility": "Visibilità (public, friends, private)",
     "smart_search_material": "Tipo/modello di veicolo",
     "smart_search_reg": "Registrazione",
     "smart_search_notes": "Note di viaggio",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "La tua richiesta di funzionalità <a href='{url}'>#{request_id}</a> è stata chiusa con stato: {status}.",
     "fr_email_reason_label": "Motivo:",
     "fr_email_english_note": "Nota: I dettagli tecnici e i motivi sono forniti in inglese per garantire la leggibilità alla nostra base utenti internazionale.",
-    "fr_email_signature": "Cordiali saluti<br>Il team di Trainlog"
+    "fr_email_signature": "Cordiali saluti<br>Il team di Trainlog",
+    "visibility": "Visibilità",
+    "visibility_select": "Seleziona visibilità",
+    "visibility_public": "Pubblico",
+    "visibility_friends": "Amici",
+    "visibility_private": "Privato",
+    "bulk_change_visibility": "Imposta visibilità"
 }

@@ -603,6 +603,7 @@
     "smart_search_operator": "Транспортный оператор",
     "smart_search_line": "Название линии",
     "smart_search_country": "Посещенные страны (ISO3166-1 alpha2, напр.: FR, DE, NO)",
+    "smart_search_visibility": "наглядность (public, friends, private)",
     "smart_search_material": "Тип/модель транспортного средства",
     "smart_search_reg": "Регистрация",
     "smart_search_notes": "Заметки о поездке",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Ваш запрос на добавление функции <a href='{url}'>#{request_id}</a> был закрыт со статусом: {status}.",
     "fr_email_reason_label": "Причина:",
     "fr_email_english_note": "Примечание: Технические детали и причины предоставлены на английском языке для обеспечения читаемости нашей международной пользовательской базы.",
-    "fr_email_signature": "С наилучшими пожеланиями<br>Команда Trainlog"
+    "fr_email_signature": "С наилучшими пожеланиями<br>Команда Trainlog",
+    "visibility": "Видимость",
+    "visibility_select": "Выберите видимость",
+    "visibility_public": "Общедоступный",
+    "visibility_friends": "Друзья",
+    "visibility_private": "Частный",
+    "bulk_change_visibility": "Установить видимость"
 }

@@ -603,6 +603,7 @@
     "smart_search_operator": "Szállítási üzemeltető",
     "smart_search_line": "Vonal neve",
     "smart_search_country": "Látogatott országok (ISO3166-1 alpha2, például: FR, DE, NO)",
+    "smart_search_visibility": "Láthatósága (public, friends, private)",
     "smart_search_material": "Jármű típusa/modellje",
     "smart_search_reg": "Regisztráció",
     "smart_search_notes": "Utazási megjegyzések",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Az ön funkciókérése <a href='{url}'>#{request_id}</a> lezárásra került a következő státusszal: {status}.",
     "fr_email_reason_label": "Ok:",
     "fr_email_english_note": "Megjegyzés: A technikai részletek és okok angolul vannak megadva, hogy biztosítsuk nemzetközi felhasználói bázisunk számára az olvashatóságot.",
-    "fr_email_signature": "Üdvözlettel<br>A Trainlog csapat"
+    "fr_email_signature": "Üdvözlettel<br>A Trainlog csapat",
+    "visibility": "Láthatóság",
+    "visibility_select": "Láthatóság kiválasztása",
+    "visibility_public": "Nyilvános",
+    "visibility_friends": "Barátok",
+    "visibility_private": "Privát",
+    "bulk_change_visibility": "Láthatóság beállítása"
 }

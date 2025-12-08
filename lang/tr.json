@@ -603,6 +603,7 @@
     "smart_search_operator": "Ulaşım operatörü",
     "smart_search_line": "Hat adı",
     "smart_search_country": "Ziyaret edilen ülkeler (ISO3166-1 alpha2, örn: FR, DE, NO)",
+    "smart_search_visibility": "Görünürlüğü (public, friends, private)",
     "smart_search_material": "Araç tipi/modeli",
     "smart_search_reg": "Kayıt",
     "smart_search_notes": "Seyahat notları",
@@ -636,5 +637,11 @@
     "fr_email_feature_closed": "Özellik talebiniz <a href='{url}'>#{request_id}</a> {status} durumu ile kapatıldı.",
     "fr_email_reason_label": "Sebep:",
     "fr_email_english_note": "Not: Teknik detaylar ve sebepler, uluslararası kullanıcı tabanımız için okunabilirliği sağlamak amacıyla İngilizce olarak sunulmaktadır.",
-    "fr_email_signature": "En içten dileklerimizle<br>Trainlog Ekibi"
+    "fr_email_signature": "En içten dileklerimizle<br>Trainlog Ekibi",
+    "visibility": "Görünürlük",
+    "visibility_select": "Görünürlüğü seçin",
+    "visibility_public": "Herkese açık",
+    "visibility_friends": "Arkadaşlar",
+    "visibility_private": "Gizli",
+    "bulk_change_visibility": "Görünürlüğü ayarla"
 }
