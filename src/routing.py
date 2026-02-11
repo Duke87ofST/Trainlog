@@ -21,10 +21,10 @@ def forward_routing_core(routingType, path, flask_request):
 
     if routingType == "train":
         use_new_router = flask_request.args.get("use_new_router", "false").lower() == "true"
-        base = "https://openrailrouting.maahl.net" if use_new_router else "http://routing.trainlog.me:5000"
+        base = "http://train-gh.srv.trainlog.me" if use_new_router else "http://train.srv.trainlog.me"
 
     elif routingType == "ferry":
-        base = "http://routing.trainlog.me:5001"
+        base = "http://ferry.srv.trainlog.me"
         coord_pairs = [
             {"lng": float(coord.split(",")[0]), "lat": float(coord.split(",")[1])}
             for coord in path.replace("route/v1/ferry/", "").split(";")
@@ -32,7 +32,7 @@ def forward_routing_core(routingType, path, flask_request):
         radiuses = ";".join(["10000"] * len(coord_pairs))
 
     elif routingType == "aerialway":
-        base = "http://routing.trainlog.me:5003"
+        base = "http://aerialway.srv.trainlog.me"
 
     elif routingType == "car":
         base = "https://routing.openstreetmap.de/routed-car"
@@ -45,26 +45,15 @@ def forward_routing_core(routingType, path, flask_request):
 
     elif routingType == "bus":
         routers = {
-            "trainlog": ("http://routing.trainlog.me:5002", 231),
-            "chiel": ("https://busrouter.chiel.uk", 232),
+            "trainlog": ("http://bus.srv.trainlog.me", 231),
             "jkimb": ("https://busrouter.jkimball.dev", 233),
             "fallback": ("https://routing.openstreetmap.de/routed-car", 234),
         }
 
         routing_groups = [
             {
-                "countries": {"NO", "SE", "FI", "DK", "GB", "IE", "IS", "IM", "FO", "GG", "JE"},
+                "countries": {"AL", "AD", "AT", "PT", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FO", "FI", "FR", "DE", "GR", "GG", "JE", "HU", "IS", "IE", "GB", "IM", "IT", "XK", "LV", "LI", "LT", "LU", "MK", "MT", "MD", "MC", "ME", "NL", "NO", "PL", "PT", "RO", "RS", "SK", "SI", "ES", "SE", "CH"},
                 "router": routers["trainlog"],
-            },
-            {
-                "countries": {
-                    "DE", "AT", "CH", "LI", "LU",
-                    "EE", "LV", "LT",
-                    "FR", "BE", "NL", "AD", "MC",
-                    "PL", "CZ", "HU",
-                    "IT", "ES", "PT",
-                },
-                "router": routers["chiel"],
             },
             {
                 "countries": {"US", "CA", "GL", "MX"},
