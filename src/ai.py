@@ -144,7 +144,7 @@ def geocode_station(query, trip_type="train", fallback_coords=None, city_fallbac
         for tag in osm_tags.get(trip_type, []):
             params.append(("osm_tag", tag))
         
-        for url in ["https://photon.chiel.uk/api", "https://photon.komoot.io/api"]:
+        for url in ["http://photon.srv.trainlog.me", "https://photon.chiel.uk/api", "https://photon.komoot.io/api"]:
             try:
                 resp = requests.get(url, params=params, timeout=10)
                 resp.raise_for_status()

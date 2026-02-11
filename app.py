@@ -4644,8 +4644,9 @@ def placeAutocomplete():
 
 
 photonInstances = {
-    "komoot": "https://photon.komoot.io",
+    "trainlog": "http://photon.srv.trainlog.me",
     "chiel": "https://photon.chiel.uk",
+    "komoot": "https://photon.komoot.io",
 }
 
 @app.route("/stationAutocomplete")
