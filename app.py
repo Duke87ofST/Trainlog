@@ -1282,6 +1282,16 @@ def new(username, vehicle_type):
             "destinationEScooterName", lang[session["userinfo"]["lang"]]["destinationBikeName"]
         )
 
+    elif vehicle_type == "ski":
+        manual_origin = lang[session["userinfo"]["lang"]]["manOrigin"]
+        new_trip = lang[session["userinfo"]["lang"]].get("newTripSki", "New Trip - Ski")
+        origin_terminal = lang[session["userinfo"]["lang"]].get("originSki", lang[session["userinfo"]["lang"]]["originAerialway"])
+        origin_terminal_name = lang[session["userinfo"]["lang"]].get("originSkiName", lang[session["userinfo"]["lang"]]["originAerialwayName"])
+        destination_terminal = lang[session["userinfo"]["lang"]].get("destinationSki", lang[session["userinfo"]["lang"]]["destinationAerialway"])
+        destination_terminal_name = lang[session["userinfo"]["lang"]].get(
+            "destinationSkiName", lang[session["userinfo"]["lang"]]["destinationAerialwayName"]
+        )
+
     return render_template(
         "new.html",
         title=new_trip,
