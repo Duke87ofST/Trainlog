@@ -37,7 +37,7 @@ CLASS_MAP = {
     "tab-club": "business",
     "tab-jidel": "dining",
     "tab-luzk": "sleeper",
-    "tab-lehk": "couchette",
+    "tab-lehat": "couchette",
     "tab-sluz": "service",
 }
 
@@ -122,9 +122,9 @@ def _resolve_img_url(src):
 
 def _parse_wagons(html: str) -> list[dict]:
     chunks = re.split(r"<hr>", html)
-    first_block = chunks[0] if chunks else html
+    best_block = max(chunks, key=lambda c: c.count("<td class='bunka_vozu'"))
 
-    parts = re.split(r"<td class='bunka_vozu'", first_block)
+    parts = re.split(r"<td class='bunka_vozu'", best_block)
     if len(parts) <= 1:
         return []
 
