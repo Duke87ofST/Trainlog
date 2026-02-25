@@ -822,5 +822,10 @@
     "tsUnitsAppended": "hozzáfűzve",
     "tsAdded": "Hozzáadva",
     "tsSaved": "Mentve",
-    "tsLoaded": "Betöltve"
+    "tsLoaded": "Betöltve",
+    "tsbBuildTrainset": "Vonatszett építése",
+    "tsbPickTrainset": "Vonatszett kiválasztása",
+    "tsbUseOnce": "Egyszeri használat",
+    "tsbSaveAndUse": "Mentés és használat",
+    "tsbNoResults": "Nincs eredmény"
 }

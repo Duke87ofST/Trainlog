@@ -112,9 +112,23 @@
 
     .compo-source a:hover,
     .compo-source a:focus{
-        color: #212529;   
+        color: #212529;
         text-decoration: none;
     }
+
+    /* Trainset strip (MLG images) inside composition modal */
+    .ts-strip { gap: 2px; }
+    .ts-unit img { max-height: 70px; image-rendering: pixelated; display: block; }
+    .ts-nom { font-size: 0.6rem; color: #ccc; text-align: center; max-width: 90px;
+              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 0; }
+
+    /* Trainset picker in edit/new forms */
+    .ts-pick-wrap { position: relative; display: inline-block; width: 100%; }
+    .ts-pick-list { position: absolute; z-index: 999; left: 0; right: 0; top: 100%;
+                    background: #fff; border: 1px solid #aaa; border-radius: 4px;
+                    max-height: 180px; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,.15); }
+    .ts-pick-item { padding: 6px 10px; cursor: pointer; font-size: 0.9rem; }
+    .ts-pick-item:hover { background: #f0f0f0; }
 </style>
 
 </style>
@@ -355,11 +369,22 @@
 const checkedTrips = [];
 const checkedTripData = {};
 
-function openCompositionModal(trainName, dateStr) {
-    // 1. Set Title
+var _trainsetNames = new Set();
+$.getJSON('/api/trainsets').done(function(rows) {
+    rows.forEach(function(r) { _trainsetNames.add(r.name); });
+});
+
+function _isValidMaterial(mat) {
+    if (!mat) return false;
+    try {
+        var arr = JSON.parse(mat);
+        return Array.isArray(arr) && arr.length > 0;
+    } catch(e) {}
+    return _trainsetNames.has(mat);
+}
+
+function openCompositionModal(trainName, dateStr, materialType) {
     $('#compositionModalTitle').text(trainName + (dateStr ? ` (${dateStr})` : ''));
-    
-    // 2. Prepare Modal Body with Loading State
     var $modalBody = $('#compositionModal .modal-body');
     $modalBody.html(`
         <div class="d-flex justify-content-center align-items-center py-5">
@@ -367,77 +392,48 @@ function openCompositionModal(trainName, dateStr) {
             <span>Loading composition...</span>
         </div>
     `);
-    
     $('#compositionModal').modal('show');
 
-    // 3. Fetch from YOUR internal endpoint
-    $.ajax({
-        url: '/api/composition', // <--- UPDATE THIS to your actual endpoint URL
-        method: 'GET', 
-        data: { 
-            train: trainName, 
-            date: dateStr 
-        },
-        dataType: 'json',
-        success: function(response) {
-            // Validate response
-            if (!response || response.length === 0) {
-                $modalBody.html('<div class="alert alert-warning">No composition data found.</div>');
-                return;
-            }
-
-            // 4. Create Structure: Container (Scroll) -> Strip (Flex)
-            var container = $('<div class="compo-container"></div>');
-            var strip = $('<div class="compo-strip"></div>');
-
-            // 5. Loop through your data format
-            response.forEach(function(w) {
-                var wagon = $('<div class="compo-wagon"></div>');
-
-                // A. Class Color Bar
-                if (w.classes && w.classes.length > 0) {
-                    var bar = $('<div class="compo-class-bar"></div>');
-                    w.classes.forEach(function(cls) {
-                        // Use safe lookup for label, fallback to raw code
-                        var label = CLASS_LABELS[cls] || cls;
-                        bar.append(`<span class="compo-class-dot c-${cls}">${label}</span>`);
-                    });
-                    wagon.append(bar);
-                } else {
-                    // Spacer if no class
-                    wagon.append('<div class="compo-class-bar" style="height:12px"></div>');
-                }
-
-                // B. Wagon Image
-                // Using w.img_url, w.height, w.width from your functioning version
-                wagon.append(`<img src="${w.img_url}" width="${w.width || 'auto'}" 
-                    title="${w.label || ''}" alt="Wagon" data-toggle="tooltip" data-placement="top">`);
-
-                // C. Coach Number
-                if (w.coach_no) {
-                    wagon.append(`<span class="compo-coach-no">${w.coach_no}</span>`);
-                } else {
-                    wagon.append('<span class="compo-coach-no">&nbsp;</span>');
-                }
-
-                strip.append(wagon);
-            });
-
-            // 6. Inject into DOM
-            container.append(strip);
-            $modalBody.empty().append(container);
-            
-            // Add source footer
-            $modalBody.append(`<div class="compo-source">Source: <a href="https://www.vagonweb.cz/razeni/" target="_blank">vagonWEB.cz</a></div>`);
-
-            // Initialize tooltips
-            container.find('[data-toggle="tooltip"]').tooltip();
-        },
-        error: function() {
-            $modalBody.html('<div class="alert alert-danger w-100 text-center">Failed to load data from server.</div>');
-        }
-    });
+    if (materialType) {
+        // JSON one-off composition
+        try {
+            var units = JSON.parse(materialType);
+            if (Array.isArray(units)) { _renderTrainset($modalBody, units, null); return; }
+        } catch(e) {}
+        // Named trainset
+        $.getJSON('/api/trainsets/by-name', { name: materialType })
+            .done(function(ts) { _renderTrainset($modalBody, ts.units, ts.name); })
+            .fail(function()   { $modalBody.html('<div class="alert alert-warning">No composition data found.</div>'); });
+    } else {
+        $modalBody.html('<div class="alert alert-warning">No composition data found.</div>');
+    }
 }
+
+function _renderTrainset($modalBody, units, setName) {
+    var wagonsBase = '{{ url_for("static", filename="images/wagons") }}';
+    var strip = $('<div class="compo-strip ts-strip"></div>');
+    (units || []).forEach(function(u) {
+        if (!u.image) return;
+        var side = u._side || 'L';
+        var base = u.image.replace(/_[LR]$/, '');
+        var src  = wagonsBase + '/' + base + (side === 'R' ? '_R' : '_L') + '.gif';
+        var fb   = wagonsBase + '/' + u.image + '.gif';
+        var wagon = $('<div class="compo-wagon ts-unit"></div>');
+        wagon.append('<div class="compo-class-bar" style="height:12px"></div>');
+        wagon.append(`<img src="${src}" onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${fb}';}else{this.style.display='none';}" title="${u.nom || ''}" data-toggle="tooltip" data-placement="top">`);
+        wagon.append(`<span class="compo-coach-no ts-nom">${u.nom || ''}</span>`);
+        strip.append(wagon);
+    });
+    if (!strip.children().length) {
+        $modalBody.html('<div class="alert alert-warning">Trainset has no units.</div>');
+        return;
+    }
+    var container = $('<div class="compo-container"></div>').append(strip);
+    $modalBody.empty().append(container);
+    if (setName) $modalBody.append(`<div class="compo-source">Trainset: ${setName}</div>`);
+    container.find('[data-toggle="tooltip"]').tooltip();
+}
+
 
 function toggleTypeFilter() {
     const switchState = document.getElementById('filterTypeSwitch').checked;
@@ -663,21 +659,18 @@ function renderLineName(data, type, row) {
     if (type === 'display' && data) {
         // Only show for trains
         if (typeof TRAIN_TYPES !== 'undefined' && TRAIN_TYPES.includes(row.type)) {
-            var dateStr = row.start_date || '';
-            // Escape quotes
+            var mat      = row.material_type || '';
+            var dateStr  = row.start_date || '';
             var safeName = data.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            
-            return `
-                <span>
-                    ${data} 
-                    <a href="javascript:void(0);" 
-                       onclick="openCompositionModal('${safeName}', '${dateStr}')" 
-                       class="text-decoration-none ms-2" 
+            var safeMat  = mat.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            var btn = _isValidMaterial(mat) ? `
+                    <a href="javascript:void(0);"
+                       onclick="openCompositionModal('${safeName}', '${dateStr}', '${safeMat}')"
+                       class="text-decoration-none ms-2"
                        title="View Composition">
                        <i class="fas fa-train"></i>
-                    </a>
-                </span>
-            `;
+                    </a>` : '';
+            return `<span>${data}${btn}</span>`;
         }
     }
     return data;
@@ -1506,7 +1499,7 @@ $('#submitBtn').on('click', function() {
         }
     }
 
-    const TRAIN_TYPES = ['train'];
+    const TRAIN_TYPES = ['train', 'metro', 'tram'];
 
     const CLASS_LABELS = {
         '1st': '1st', '2nd': '2nd', '2nd-plus': '2+', 'business': 'Biz',
@@ -1529,60 +1522,8 @@ $('#submitBtn').on('click', function() {
         var params = { train: trainName };
         if (dateStr) params.date = dateStr;
 
-        // Calls the vagonweb_blueprint endpoint
-        $.getJSON("{{ url_for('vagonweb.api_composition') }}", params)
-            .done(function(wagons) {
-                if (!wagons || wagons.length === 0) {
-                    container.html('<div class="compo-error">No composition found on vagonWEB</div>');
-                    container.data('loaded', true);
-                    return;
-                }
-                if (wagons.error) {
-                    container.html(`<div class="compo-error">${wagons.error}</div>`);
-                    container.data('loaded', true);
-                    return;
-                }
-
-                var strip = $('<div class="compo-strip"></div>');
-                wagons.forEach(function(w) {
-                    var wagon = $('<div class="compo-wagon"></div>');
-
-                    // Class color bar
-                    if (w.classes && w.classes.length) {
-                        var bar = $('<div class="compo-class-bar"></div>');
-                        w.classes.forEach(function(cls) {
-                            bar.append(`<span class="compo-class-dot c-${cls}">${CLASS_LABELS[cls] || cls}</span>`);
-                        });
-                        wagon.append(bar);
-                    } else {
-                        wagon.append('<div class="compo-class-bar" style="height:12px"></div>');
-                    }
-
-                    // Wagon image
-                    wagon.append(`<img src="${w.img_url}" height="${w.height}" width="${w.width}" 
-                        title="${w.label}" data-toggle="tooltip" data-placement="top">`);
-
-                    // Coach number
-                    if (w.coach_no) {
-                        wagon.append(`<span class="compo-coach-no">${w.coach_no}</span>`);
-                    } else {
-                        wagon.append('<span class="compo-coach-no">&nbsp;</span>');
-                    }
-
-                    strip.append(wagon);
-                });
-
-                var html = $('<div class="compo-container"></div>').append(strip);
-                container.html(html);
-                container.data('loaded', true);
-                container.find('[data-toggle="tooltip"]').tooltip();
-            })
-            .fail(function(xhr) {
-                var msg = 'Composition not available';
-                try { msg = JSON.parse(xhr.responseText).error || msg; } catch(e) {}
-                container.html(`<div class="compo-error">${msg}</div>`);
-                container.data('loaded', true);
-            });
+        container.html('<div class="compo-error">No composition data found.</div>');
+        container.data('loaded', true);
     }
 </script>
 

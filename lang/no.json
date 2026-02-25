@@ -822,5 +822,10 @@
     "tsUnitsAppended": "lagt til",
     "tsAdded": "Lagt til",
     "tsSaved": "Lagret",
-    "tsLoaded": "Lastet inn"
+    "tsLoaded": "Lastet inn",
+    "tsbBuildTrainset": "Bygg togssett",
+    "tsbPickTrainset": "Velg togsett",
+    "tsbUseOnce": "Bruk én gang",
+    "tsbSaveAndUse": "Lagre og bruk",
+    "tsbNoResults": "Ingen resultater"
 }

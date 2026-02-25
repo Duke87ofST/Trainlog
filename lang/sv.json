@@ -822,5 +822,10 @@
     "tsUnitsAppended": "tilläggd",
     "tsAdded": "Tillagd",
     "tsSaved": "Sparad",
-    "tsLoaded": "Inläst"
+    "tsLoaded": "Inläst",
+    "tsbBuildTrainset": "Bygg tågset",
+    "tsbPickTrainset": "Välj tågset",
+    "tsbUseOnce": "Använd en gång",
+    "tsbSaveAndUse": "Spara och använd",
+    "tsbNoResults": "Inga resultat"
 }

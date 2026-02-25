@@ -822,5 +822,10 @@
     "tsUnitsAppended": "追加されました",
     "tsAdded": "追加しました",
     "tsSaved": "保存しました",
-    "tsLoaded": "読み込み完了"
+    "tsLoaded": "読み込み完了",
+    "tsbBuildTrainset": "トレインセットを作成",
+    "tsbPickTrainset": "トレインセットを選択",
+    "tsbUseOnce": "一度使用",
+    "tsbSaveAndUse": "保存して使用",
+    "tsbNoResults": "結果がありません"
 }

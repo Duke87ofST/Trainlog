@@ -822,5 +822,10 @@
     "tsUnitsAppended": "aggiunto",
     "tsAdded": "Aggiunto",
     "tsSaved": "Salvato",
-    "tsLoaded": "Caricato"
+    "tsLoaded": "Caricato",
+    "tsbBuildTrainset": "Costruisci set di treni",
+    "tsbPickTrainset": "Scegli set di treni",
+    "tsbUseOnce": "Usa una volta",
+    "tsbSaveAndUse": "Salva e usa",
+    "tsbNoResults": "Nessun risultato"
 }

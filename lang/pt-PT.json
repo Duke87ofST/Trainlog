@@ -822,5 +822,10 @@
     "tsUnitsAppended": "acrescentado",
     "tsAdded": "Adicionado",
     "tsSaved": "Guardado",
-    "tsLoaded": "Carregado"
+    "tsLoaded": "Carregado",
+    "tsbBuildTrainset": "Construir conjunto de comboio",
+    "tsbPickTrainset": "Escolher conjunto de comboio",
+    "tsbUseOnce": "Usar uma vez",
+    "tsbSaveAndUse": "Guardar e usar",
+    "tsbNoResults": "Sem resultados"
 }

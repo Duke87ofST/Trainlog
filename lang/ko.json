@@ -822,5 +822,10 @@
     "tsUnitsAppended": "추가됨",
     "tsAdded": "추가됨",
     "tsSaved": "저장됨",
-    "tsLoaded": "로드됨"
+    "tsLoaded": "로드됨",
+    "tsbBuildTrainset": "기차 세트 작성",
+    "tsbPickTrainset": "기차 세트 선택",
+    "tsbUseOnce": "한 번 사용하기",
+    "tsbSaveAndUse": "저장 및 사용",
+    "tsbNoResults": "결과 없음"
 }

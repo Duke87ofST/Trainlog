@@ -822,5 +822,10 @@
     "tsUnitsAppended": "追加",
     "tsAdded": "已添加",
     "tsSaved": "已保存",
-    "tsLoaded": "已加载"
+    "tsLoaded": "已加载",
+    "tsbBuildTrainset": "建立列车组",
+    "tsbPickTrainset": "选择列车组",
+    "tsbUseOnce": "使用一次",
+    "tsbSaveAndUse": "保存并使用",
+    "tsbNoResults": "没有结果"
 }

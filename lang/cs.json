@@ -822,5 +822,10 @@
     "tsUnitsAppended": "připojeno",
     "tsAdded": "Přidáno",
     "tsSaved": "Uloženo",
-    "tsLoaded": "Načteno"
+    "tsLoaded": "Načteno",
+    "tsbBuildTrainset": "Vytvořit vlakovou soupravu",
+    "tsbPickTrainset": "Vybrat vlakovou soupravu",
+    "tsbUseOnce": "Použít jednou",
+    "tsbSaveAndUse": "Uložit a použít",
+    "tsbNoResults": "Žádné výsledky"
 }

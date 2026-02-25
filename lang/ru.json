@@ -822,5 +822,10 @@
     "tsUnitsAppended": "добавлено",
     "tsAdded": "Добавлено",
     "tsSaved": "Сохранено",
-    "tsLoaded": "Загружено"
+    "tsLoaded": "Загружено",
+    "tsbBuildTrainset": "Построить поезд",
+    "tsbPickTrainset": "Выбрать поезд",
+    "tsbUseOnce": "Использовать один раз",
+    "tsbSaveAndUse": "Сохранить и использовать",
+    "tsbNoResults": "Нет результатов"
 }

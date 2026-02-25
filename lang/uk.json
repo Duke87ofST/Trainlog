@@ -822,5 +822,10 @@
     "tsUnitsAppended": "додано",
     "tsAdded": "Додано",
     "tsSaved": "Збережено",
-    "tsLoaded": "Завантажено"
+    "tsLoaded": "Завантажено",
+    "tsbBuildTrainset": "Створити потяг",
+    "tsbPickTrainset": "Вибрати потяг",
+    "tsbUseOnce": "Використати один раз",
+    "tsbSaveAndUse": "Зберегти та використати",
+    "tsbNoResults": "Немає результатів"
 }

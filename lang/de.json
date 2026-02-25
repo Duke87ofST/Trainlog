@@ -822,5 +822,10 @@
     "tsUnitsAppended": "angehängt",
     "tsAdded": "Hinzugefügt",
     "tsSaved": "Gespeichert",
-    "tsLoaded": "Geladen"
+    "tsLoaded": "Geladen",
+    "tsbBuildTrainset": "Zugset bauen",
+    "tsbPickTrainset": "Zugset auswählen",
+    "tsbUseOnce": "Einmal verwenden",
+    "tsbSaveAndUse": "Speichern und verwenden",
+    "tsbNoResults": "Keine Ergebnisse"
 }

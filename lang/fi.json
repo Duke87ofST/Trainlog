@@ -822,5 +822,10 @@
     "tsUnitsAppended": "lisätty",
     "tsAdded": "Lisätty",
     "tsSaved": "Tallennettu",
-    "tsLoaded": "Ladattu"
+    "tsLoaded": "Ladattu",
+    "tsbBuildTrainset": "Rakenna junasetti",
+    "tsbPickTrainset": "Valitse junasetti",
+    "tsbUseOnce": "Käytä kerran",
+    "tsbSaveAndUse": "Tallenna ja käytä",
+    "tsbNoResults": "Ei tuloksia"
 }

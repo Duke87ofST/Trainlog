@@ -822,5 +822,10 @@
     "tsUnitsAppended": "lisatud",
     "tsAdded": "Lisatud",
     "tsSaved": "Salvestatud",
-    "tsLoaded": "Laaditud"
+    "tsLoaded": "Laaditud",
+    "tsbBuildTrainset": "Koosta rongikomplekt",
+    "tsbPickTrainset": "Vali rongikomplekt",
+    "tsbUseOnce": "Kasuta üks kord",
+    "tsbSaveAndUse": "Salvesta ja kasuta",
+    "tsbNoResults": "Tulemusi pole"
 }

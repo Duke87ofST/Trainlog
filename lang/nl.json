@@ -822,5 +822,10 @@
     "tsUnitsAppended": "toegevoegd",
     "tsAdded": "Toegevoegd",
     "tsSaved": "Opgeslagen",
-    "tsLoaded": "Geladen"
+    "tsLoaded": "Geladen",
+    "tsbBuildTrainset": "Treinstel bouwen",
+    "tsbPickTrainset": "Treinstel kiezen",
+    "tsbUseOnce": "Eenmaal gebruiken",
+    "tsbSaveAndUse": "Opslaan en gebruiken",
+    "tsbNoResults": "Geen resultaten"
 }

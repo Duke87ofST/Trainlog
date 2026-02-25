@@ -822,5 +822,10 @@
     "tsUnitsAppended": "aagfieget",
     "tsAdded": "Hinzugefügt",
     "tsSaved": "Gspeicheret",
-    "tsLoaded": "Glaade"
+    "tsLoaded": "Glaade",
+    "tsbBuildTrainset": "Zugset baue",
+    "tsbPickTrainset": "Zugset ussuche",
+    "tsbUseOnce": "Einmol verwände",
+    "tsbSaveAndUse": "Spychere und verwände",
+    "tsbNoResults": "Kei Resultat"
 }

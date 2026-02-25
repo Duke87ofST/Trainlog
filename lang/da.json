@@ -822,5 +822,10 @@
     "tsUnitsAppended": "tilføjet",
     "tsAdded": "Tilføjet",
     "tsSaved": "Gemt",
-    "tsLoaded": "Indlæst"
+    "tsLoaded": "Indlæst",
+    "tsbBuildTrainset": "Byg togstamme",
+    "tsbPickTrainset": "Vælg togstamme",
+    "tsbUseOnce": "Brug én gang",
+    "tsbSaveAndUse": "Gem og brug",
+    "tsbNoResults": "Ingen resultater"
 }

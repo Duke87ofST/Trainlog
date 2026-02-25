@@ -822,5 +822,10 @@
     "tsUnitsAppended": "dodano",
     "tsAdded": "Dodano",
     "tsSaved": "Spremljeno",
-    "tsLoaded": "Učitano"
+    "tsLoaded": "Učitano",
+    "tsbBuildTrainset": "Izgradi vlak set",
+    "tsbPickTrainset": "Odaberi vlak set",
+    "tsbUseOnce": "Koristi jednom",
+    "tsbSaveAndUse": "Spremi i koristi",
+    "tsbNoResults": "Nema rezultata"
 }

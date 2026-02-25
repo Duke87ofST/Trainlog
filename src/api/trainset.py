@@ -121,6 +121,36 @@ def create_trainset():
     return jsonify({'id': trainset_id, 'name': name, 'is_admin': int(set_is_admin)}), 201
 
 
+@trainset_blueprint.route('/api/trainsets/by-name')
+def get_trainset_by_name():
+    username, _ = _session_user()
+    if not username:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    name = request.args.get('name', '').strip()
+    if not name:
+        return jsonify({'error': 'name required'}), 400
+
+    with pg_session() as pg:
+        result = pg.execute(
+            """
+            SELECT id, name, username, is_admin::int AS is_admin,
+                   created_at, updated_at, units_json
+            FROM trainsets WHERE name = :name
+              AND (is_admin OR username = :username)
+            """,
+            {"name": name, "username": username},
+        )
+        row = result.fetchone()
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+        d = dict(row)
+        slim_units = json.loads(d.pop('units_json') or '[]')
+        d['units'] = _enrich_units(pg, slim_units)
+
+    return jsonify(d)
+
+
 @trainset_blueprint.route('/api/trainsets/<int:tid>', methods=['GET'])
 def get_trainset(tid):
     username, _ = _session_user()
