@@ -773,7 +773,8 @@ window.addEventListener('resize', () => {
 // ── SMART IMAGE ──
 function smartImgSrc(imagePath, side = 'L') {
   if (!imagePath) return '';
-  return `{{url_for("static", filename="images/wagons")}}/${imagePath}${side === 'R' ? '_R' : '_L'}.gif`;
+  const base = imagePath.replace(/_[LR]$/, '');
+  return `{{url_for("static", filename="images/wagons")}}/${base}${side === 'R' ? '_R' : '_L'}.gif`;
 }
 function smartImgOnerror(imagePath) {
   if (!imagePath) return '';
