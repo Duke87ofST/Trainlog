@@ -49,7 +49,7 @@ def search_wagons():
     with pg_session() as pg:
         result = pg.execute(
             """
-            SELECT id, source, titre1, titre2, nom, epo, datmaj, image, notes, typeligne
+            SELECT source, titre1, titre2, nom, epo, datmaj, image, name, notes, typeligne
             FROM wagons
             WHERE nom ILIKE :like OR titre1 ILIKE :like OR titre2 ILIKE :like OR notes ILIKE :like
             ORDER BY
@@ -211,8 +211,8 @@ def delete_trainset(tid):
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 def _slim_units(units):
-    """Keep only wagon id and flip-side — all other data lives in the wagons table."""
-    return [{'id': u['id'], '_side': u.get('_side', 'L')} for u in units if 'id' in u]
+    """Keep only wagon name and flip-side — all other data lives in the wagons table."""
+    return [{'name': u['name'], '_side': u.get('_side', 'L')} for u in units if 'name' in u]
 
 
 def _enrich_units(pg, slim_units):
@@ -220,8 +220,8 @@ def _enrich_units(pg, slim_units):
     enriched = []
     for u in slim_units:
         result = pg.execute(
-            "SELECT id, titre1, titre2, nom, epo, image, notes FROM wagons WHERE id = :id",
-            {"id": u['id']},
+            "SELECT titre1, titre2, nom, epo, image, name, notes FROM wagons WHERE name = :name",
+            {"name": u['name']},
         )
         wagon = result.fetchone()
         if wagon:

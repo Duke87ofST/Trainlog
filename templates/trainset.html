@@ -1041,7 +1041,7 @@ async function saveTrainset() {
   try {
     const method = currentTs.id ? 'PUT' : 'POST';
     const url    = currentTs.id ? `${BASE}/api/trainsets/${currentTs.id}` : `${BASE}/api/trainsets`;
-    const body   = { name, units: currentTs.units.map(u => ({ id: u.id, _side: u._side || 'L' })) };
+    const body   = { name, units: currentTs.units.map(u => ({ name: u.name, _side: u._side || 'L' })) };
     if (!currentTs.id) body.is_admin = currentTs.is_admin || 0;
     const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     if (!res.ok) { const d = await res.json(); setStatus(d.error || i18n.saveFailed, true); return; }
