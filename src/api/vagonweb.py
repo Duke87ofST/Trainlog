@@ -16,6 +16,7 @@ import posixpath
 from pathlib import Path
 
 import requests
+from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
 from flask import Blueprint, jsonify, request, session
 
 from src.pg import pg_session
@@ -109,23 +110,51 @@ def _strip_tags(s: str) -> str:
 
 def _parse_train_title(html: str) -> str:
     """
-    Extract a clean train title like "IC 186 Hernád" from the first velky15 span.
-    Falls back to the page <title> tag.
+    Extract a clean train title, trying three sources in order:
+
+    1. velky15 span — IC/EC pages with multiple carriers:
+       <span class='velky15'><img alt='IC'> 186 <i>Hernád</i> …</span>  →  "IC 186 Hernád"
+
+    2. Plain <h2> — single-carrier pages:
+       <h2><span title='Rt'>Rt </span> 606 <i>F4</i></h2>  →  "Rt 606 F4"
+
+    3. Last segment of the <title> tag:
+       "vagonWEB » … » Rt 606 F4"  →  "Rt 606 F4"
     """
+    def _from_content(content: str, cat_from_img: bool) -> str:
+        if cat_from_img:
+            cat_m = re.search(r"<img[^>]+alt='([^']+)'", content)
+            category = cat_m.group(1).strip() if cat_m else ""
+        else:
+            cat_m = re.search(r"<span[^>]+title='([^']+)'", content)
+            category = cat_m.group(1).strip() if cat_m else ""
+        name_m = re.search(r"<i>([^<]+)</i>", content)
+        name   = name_m.group(1).strip() if name_m else ""
+        num_m  = re.search(r"\b(\d+)\b", _strip_tags(content))
+        number = num_m.group(1) if num_m else ""
+        parts  = [p for p in [category, number, name] if p]
+        return " ".join(parts)
+
     m = re.search(r"<span[^>]+class='velky15'>(.*?)</span>", html, re.DOTALL)
     if m:
-        content = m.group(1)
-        cat_m   = re.search(r"<img[^>]+alt='([^']+)'", content)
-        category = cat_m.group(1) if cat_m else ""
-        name_m  = re.search(r"<i>([^<]+)</i>", content)
-        name    = name_m.group(1).strip() if name_m else ""
-        num_m   = re.search(r"\b(\d+)\b", _strip_tags(content))
-        number  = num_m.group(1) if num_m else ""
-        parts   = [p for p in [category, number, name] if p]
-        if parts:
-            return " ".join(parts)
+        title = _from_content(m.group(1), cat_from_img=True)
+        if title:
+            return title
+
+    m = re.search(r"<h2[^>]*>(.*?)</h2>", html, re.DOTALL)
+    if m:
+        title = _from_content(m.group(1), cat_from_img=False)
+        if title:
+            return title
+
+    # Last fallback: strip the verbose breadcrumb prefix from <title>
     m = re.search(r"<title>([^<]+)</title>", html)
-    return m.group(1).strip() if m else "Unknown Train"
+    if m:
+        raw = html_mod.unescape(m.group(1))
+        parts = [p.strip() for p in raw.split("»")]
+        return parts[-1] if parts else raw.strip()
+
+    return "Unknown Train"
 
 
 def _clean_comp_title(h4_html: str) -> str:
@@ -333,6 +362,15 @@ def _parse_page(html: str) -> dict:
 
 # ── Import orchestration ───────────────────────────────────────────────────────
 
+def _ensure_english(url: str) -> str:
+    """Add or override lang=en on a VagonWeb URL."""
+    parsed = urlparse(url)
+    params = parse_qs(parsed.query, keep_blank_values=True)
+    params["lang"] = ["en"]
+    new_query = urlencode({k: v[0] for k, v in params.items()})
+    return urlunparse(parsed._replace(query=new_query))
+
+
 def import_from_url(url: str, admin_username: str) -> dict:
     """
     Fetch a VagonWeb page, import all wagons and compositions into the DB.
@@ -340,7 +378,7 @@ def import_from_url(url: str, admin_username: str) -> dict:
     Returns a summary dict:
         { wagons_imported, wagons_skipped, trainsets_created, errors }
     """
-    resp = requests.get(url, headers=HEADERS, timeout=15)
+    resp = requests.get(_ensure_english(url), headers=HEADERS, timeout=15)
     resp.raise_for_status()
     html = resp.text
 
@@ -406,9 +444,9 @@ def import_from_url(url: str, admin_username: str) -> dict:
             result = pg.execute(
                 """
                 INSERT INTO wagons
-                    (name, nom, titre1, titre2, source, image, image_type, notes)
+                    (name, nom, titre1, titre2, epo, source, image, image_type, notes)
                 VALUES
-                    (:name, :nom, :titre1, :titre2, :source, :image, :image_type, :notes)
+                    (:name, :nom, :titre1, :titre2, :epo, :source, :image, :image_type, :notes)
                 ON CONFLICT (name) DO NOTHING
                 RETURNING name
                 """,
@@ -417,6 +455,7 @@ def import_from_url(url: str, admin_username: str) -> dict:
                     "nom":        nom,
                     "titre1":     titre1,
                     "titre2":     titre2,
+                    "epo":        "6",
                     "source":     "VagonWeb",
                     "image":      image_field,
                     "image_type": image_type,
