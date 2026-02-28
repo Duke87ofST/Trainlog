@@ -55,6 +55,13 @@
   /* ── open ── */
   window.openTsbModal = function () {
     _units = [];
+    var val = document.getElementById('material_type').value;
+    try {
+      var saved = JSON.parse(val);
+      if (Array.isArray(saved)) {
+        saved.forEach(function(u) { _units.push(Object.assign({}, u, { _uid: ++_uid, _side: u._side || 'L' })); });
+      }
+    } catch(e) {}
     document.getElementById('tsb-q').value = '';
     document.getElementById('tsb-results').innerHTML = '';
     document.getElementById('tsb-save-row').classList.add('d-none');
@@ -127,8 +134,6 @@
 
         btn.onclick = function () {
           _addUnit(w);
-          el.innerHTML = '';
-          document.getElementById('tsb-q').value = '';
         };
         el.appendChild(btn);
       });
