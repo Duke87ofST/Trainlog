@@ -195,7 +195,6 @@ td.noHidden{
 }
 
 .trips{
-  margin-top: 30px;
   margin-bottom: 70px;
   padding: 25px;
 }
@@ -1334,7 +1333,7 @@ html, body {
   }
 }
  
-.btn {
+.btn-labeled {
   margin-bottom: 10px;
 }
 
