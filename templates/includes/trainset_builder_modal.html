@@ -3,6 +3,7 @@
   .tsb-unit { min-width:68px; max-width:84px; font-size:.7rem; background:#f8f9fa;
               border:1px solid #dee2e6; border-radius:4px; padding:4px; text-align:center; }
   .tsb-unit img { max-height:38px; max-width:76px; display:block; margin:0 auto 2px; }
+  .tsb-unit .tsb-ph { max-height:30px; opacity:0.5; }
   .tsb-unit .tsb-nom { display:block; overflow:hidden; text-overflow:ellipsis;
                        white-space:nowrap; width:100%; }
   .tsb-unit[draggable="true"] { cursor: grab; }
@@ -174,7 +175,6 @@
 
       if (!rows.length && !matchingSets.length) {
         el.innerHTML = '<div class="list-group-item small text-muted py-1">' + _i18n.noResults + '</div>';
-        return;
       }
       rows.forEach(function (w) {
         var btn = document.createElement('button');
@@ -227,6 +227,33 @@
         };
         el.appendChild(btn);
       });
+
+      /* "Add as unknown wagon" footer row */
+      var addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'list-group-item list-group-item-action py-1 px-2 d-flex align-items-center gap-2';
+      addBtn.style.cssText = 'color:#888;font-style:italic';
+      var plusSpan = document.createElement('span');
+      plusSpan.style.cssText = 'font-size:.85rem;flex-shrink:0';
+      plusSpan.textContent = '＋';
+      addBtn.appendChild(plusSpan);
+      var addInfo = document.createElement('div');
+      addInfo.className = 'flex-fill overflow-hidden';
+      var addStrong = document.createElement('strong');
+      addStrong.style.cssText = 'font-size:.8rem;font-style:normal';
+      addStrong.textContent = '\u201c' + q + '\u201d';
+      var addSub = document.createElement('div');
+      addSub.style.fontSize = '.72rem';
+      addSub.textContent = 'Add as unknown wagon';
+      addInfo.appendChild(addStrong);
+      addInfo.appendChild(addSub);
+      addBtn.appendChild(addInfo);
+      addBtn.onclick = function () {
+        _addUnit({ name: q, label: q, image: null, image_type: 'plain',
+                   category: '', subcategory: '', era: '', notes: '',
+                   source: '', author: '', license: '' });
+      };
+      el.appendChild(addBtn);
     });
   }
 
@@ -272,14 +299,19 @@
       badge.style.display = 'none';
     }
 
-    _units.forEach(function (u) {
+    _units.forEach(function (u, i) {
+      var isFirst = (i === 0), isLast = (i === _units.length - 1);
+      var phSuffix = (isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid';
+      var phSrc = WAGONS + '/placeholder_' + phSuffix + '.svg';
+
       var card = document.createElement('div');
       card.className = 'tsb-unit';
 
       var img = document.createElement('img');
-      img.src = _imgSrc(u.image, u._side, u.image_type);
+      img.src = u.image ? _imgSrc(u.image, u._side, u.image_type) : phSrc;
       img.title = u.label || '';
-      img.onerror = function () { this.style.display = 'none'; };
+      if (!u.image) img.className = 'tsb-ph';
+      img.onerror = function () { this.src = phSrc; this.className = 'tsb-ph'; this.onerror = null; };
       card.appendChild(img);
 
       var nom = document.createElement('span');

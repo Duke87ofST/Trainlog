@@ -388,6 +388,7 @@ body {
 }
 .unit-img img { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; filter: brightness(.9) contrast(1.1); }
 .unit-img .no-img { color: var(--muted); font-size: 28px; opacity: .3; }
+.unit-img .wagon-placeholder-img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0.5; }
 .unit-info {
   padding: 5px 7px 6px;
   border-top: 1px solid var(--border);
@@ -734,7 +735,8 @@ function positionAcList() {
 }
 
 function renderAc() {
-  if (!acItems.length) { closeAc(); return; }
+  if (!acItems.length && !searchInput.value.trim()) { closeAc(); return; }
+  const q = searchInput.value.trim();
   acList.innerHTML = acItems.map((w, i) => {
     const thumb = w.image
       ? `<img src="${smartImgSrc(w.image, 'L', w.image_type)}" onerror="${smartImgOnerror()}" alt="${esc(w.label)}">`
@@ -749,9 +751,27 @@ function renderAc() {
       </div>
     </div>`;
   }).join('');
-  acList.querySelectorAll('.ac-item').forEach(el => {
+  if (q) {
+    acList.innerHTML += `<div class="ac-item ac-add-unknown" data-q="${esc(q)}">
+      <div class="ac-thumb"><span class="ac-thumb-none" style="opacity:.5">＋</span></div>
+      <div class="ac-text">
+        <div class="ac-nom">&#8220;${esc(q)}&#8221;</div>
+        <div class="ac-cat" style="font-style:italic">Add as unknown wagon</div>
+      </div>
+    </div>`;
+  }
+  acList.querySelectorAll('.ac-item:not(.ac-add-unknown)').forEach(el => {
     el.addEventListener('mousedown', e => { e.preventDefault(); addUnit(acItems[+el.dataset.i]); });
     el.addEventListener('mouseenter', () => { acSelected = +el.dataset.i; renderAcSelected(); });
+  });
+  acList.querySelectorAll('.ac-add-unknown').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const name = el.dataset.q;
+      addUnit({ name, label: name, image: null, image_type: 'plain',
+                category: '', subcategory: '', era: '', notes: '',
+                source: '', author: '', license: '' });
+    });
   });
   positionAcList();
   acList.classList.add('open');
@@ -779,8 +799,13 @@ function smartImgSrc(imagePath, side = 'L', imageType = 'sides') {
   if (imageType === 'sides_R') return `${WAGONS_URL}/${imagePath}_R.gif`;
   return `${WAGONS_URL}/${imagePath}.gif`;
 }
-function smartImgOnerror() {
-  return `this.replaceWith(Object.assign(document.createElement('span'),{className:'no-img',textContent:'🚃'}))`;
+function _placeholderSrc(isFirst, isLast) {
+  const suffix = (isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid';
+  return `${WAGONS_URL}/placeholder_${suffix}.svg`;
+}
+function smartImgOnerror(isFirst, isLast) {
+  const src = _placeholderSrc(isFirst, isLast);
+  return `this.src='${src}';this.className='wagon-placeholder-img';this.onerror=null;`;
 }
 
 // ── PERMISSIONS ──
@@ -850,8 +875,9 @@ function renderStrip() {
     el.dataset.uid = u._uid;
     const side = u._side || 'L';
     el.dataset.side = side;
-    const imgSrc  = u.image ? smartImgSrc(u.image, side, u.image_type) : '';
-    const imgErr  = u.image ? smartImgOnerror() : '';
+    const isFirst = (i === 0), isLast = (i === units.length - 1);
+    const imgSrc  = u.image ? smartImgSrc(u.image, side, u.image_type) : _placeholderSrc(isFirst, isLast);
+    const imgErr  = `this.src='${_placeholderSrc(isFirst, isLast)}';this.className='wagon-placeholder-img';this.onerror=null;`;
     const canFlip = u.image_type === 'sides';
     el.innerHTML = `
       <div class="unit-number">#${i + 1}</div>
@@ -861,7 +887,7 @@ function renderStrip() {
         <button class="uc-btn" title="${i18n.deleteTitle}" data-action="del">✕</button>
       </div>
       <div class="unit-img">
-        ${imgSrc ? `<img src="${esc(imgSrc)}" alt="${esc(u.label)}" onerror="${imgErr}">` : '<span class="no-img">🚃</span>'}
+        <img src="${esc(imgSrc)}" alt="${esc(u.label)}" onerror="${imgErr}" ${!u.image ? 'class="wagon-placeholder-img"' : ''}>
       </div>
       <div class="unit-info">
         <div class="unit-nom">${esc(u.label)}</div>

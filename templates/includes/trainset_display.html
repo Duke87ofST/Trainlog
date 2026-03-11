@@ -132,6 +132,9 @@
     .ts-unit img { max-height: 70px; image-rendering: pixelated; display: block; }
     .ts-nom { font-size: 0.6rem; color: #ccc; text-align: center; max-width: 90px;
               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 0; }
+
+    /* Placeholder for wagons not yet in the catalogue */
+    .wagon-placeholder-img { height: 44px; width: auto; opacity: 0.5; display: block; flex-shrink: 0; }
 </style>
 
 {# ── JavaScript ───────────────────────────────────────────────────────────── #}
@@ -149,6 +152,14 @@ function _wagonImgSrc(u) {
     if (u.image_type === 'sides_L') return _wagonsBase + '/' + u.image + '_L.gif';
     if (u.image_type === 'sides_R') return _wagonsBase + '/' + u.image + '_R.gif';
     return _wagonsBase + '/' + u.image + '.gif';
+}
+
+function _makePlaceholder(isLight, isFirst, isLast) {
+    var suffix = (isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid';
+    var img = document.createElement('img');
+    img.src = _wagonsBase + '/placeholder_' + suffix + '.svg';
+    img.className = 'wagon-placeholder-img';
+    return img;
 }
 
 function _attributionParts(units) {
@@ -206,11 +217,19 @@ function _resolveUnits(value) {
 /* Render into a modal body element */
 function _renderTrainset($modalBody, units, setName) {
     var strip = $('<div class="compo-strip ts-strip"></div>');
-    (units || []).forEach(function(u) {
-        if (!u.image) return;
+    var all = units || [];
+    all.forEach(function(u, i) {
+        var isFirst = (i === 0), isLast = (i === all.length - 1);
         var wagon = $('<div class="compo-wagon ts-unit"></div>');
         wagon.append('<div class="compo-class-bar" style="height:12px"></div>');
-        wagon.append('<img src="' + _wagonImgSrc(u) + '" onerror="this.style.display=\'none\';" title="' + esc(u.label || u.nom || '') + '" data-toggle="tooltip" data-placement="top">');
+        if (u.image) {
+            var img = $('<img>').attr({src: _wagonImgSrc(u), title: u.label || u.nom || '',
+                'data-toggle': 'tooltip', 'data-placement': 'top'});
+            img.on('error', function() { $(this).replaceWith(_makePlaceholder(false, isFirst, isLast)); });
+            wagon.append(img);
+        } else {
+            wagon.append(_makePlaceholder(false, isFirst, isLast));
+        }
         wagon.append('<span class="compo-coach-no ts-nom">' + esc(u.label || u.nom || '') + '</span>');
         strip.append(wagon);
     });
@@ -233,11 +252,19 @@ function _renderTrainsetInline(rowId, units, labels) {
     var $container = $('#trainsetInline' + rowId);
     if (!$container.length) return;
     var strip = $('<div class="compo-strip ts-strip"></div>');
-    (units || []).forEach(function(u) {
-        if (!u.image) return;
+    var all = units || [];
+    all.forEach(function(u, i) {
+        var isFirst = (i === 0), isLast = (i === all.length - 1);
         var wagon = $('<div class="compo-wagon ts-unit"></div>');
         wagon.append('<div class="compo-class-bar" style="height:12px"></div>');
-        wagon.append('<img src="' + _wagonImgSrc(u) + '" onerror="this.style.display=\'none\';" title="' + esc(u.label || u.nom || '') + '" data-toggle="tooltip" data-placement="top">');
+        if (u.image) {
+            var img = $('<img>').attr({src: _wagonImgSrc(u), title: u.label || u.nom || '',
+                'data-toggle': 'tooltip', 'data-placement': 'top'});
+            img.on('error', function() { $(this).replaceWith(_makePlaceholder(true, isFirst, isLast)); });
+            wagon.append(img);
+        } else {
+            wagon.append(_makePlaceholder(true, isFirst, isLast));
+        }
         wagon.append('<span class="compo-coach-no ts-nom ts-nom-inline">' + esc(u.label || u.nom || '') + '</span>');
         strip.append(wagon);
     });

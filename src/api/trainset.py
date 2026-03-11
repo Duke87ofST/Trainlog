@@ -350,7 +350,14 @@ def _enrich_units(pg, slim_units):
         )
         wagon = result.fetchone()
         if wagon:
-            unit          = dict(wagon)
-            unit['_side'] = u.get('_side', 'L')
-            enriched.append(unit)
+            unit = dict(wagon)
+        else:
+            unit = {
+                'name': u['name'], 'label': u.get('label', u['name']),
+                'image': None, 'image_type': 'plain',
+                'category': None, 'subcategory': None, 'era': None,
+                'notes': None, 'source': None, 'author': None, 'license': None,
+            }
+        unit['_side'] = u.get('_side', 'L')
+        enriched.append(unit)
     return enriched
