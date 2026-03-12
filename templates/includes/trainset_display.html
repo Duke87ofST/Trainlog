@@ -154,8 +154,8 @@ function _wagonImgSrc(u) {
     return _wagonsBase + '/' + u.image + '.gif';
 }
 
-function _makePlaceholder(isLight, isFirst, isLast) {
-    var suffix = (isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid';
+function _makePlaceholder(isLight, isFirst, isLast, phType) {
+    var suffix = phType || ((isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid');
     var img = document.createElement('img');
     img.src = _wagonsBase + '/placeholder_' + suffix + '.svg';
     img.className = 'wagon-placeholder-img';
@@ -225,10 +225,10 @@ function _renderTrainset($modalBody, units, setName) {
         if (u.image) {
             var img = $('<img>').attr({src: _wagonImgSrc(u), title: u.label || u.nom || '',
                 'data-toggle': 'tooltip', 'data-placement': 'top'});
-            img.on('error', function() { $(this).replaceWith(_makePlaceholder(false, isFirst, isLast)); });
+            img.on('error', (function(iF,iL,pT) { return function() { $(this).replaceWith(_makePlaceholder(false, iF, iL, pT)); }; })(isFirst, isLast, u._phType));
             wagon.append(img);
         } else {
-            wagon.append(_makePlaceholder(false, isFirst, isLast));
+            wagon.append(_makePlaceholder(false, isFirst, isLast, u._phType));
         }
         wagon.append('<span class="compo-coach-no ts-nom">' + esc(u.label || u.nom || '') + '</span>');
         strip.append(wagon);
@@ -260,10 +260,10 @@ function _renderTrainsetInline(rowId, units, labels) {
         if (u.image) {
             var img = $('<img>').attr({src: _wagonImgSrc(u), title: u.label || u.nom || '',
                 'data-toggle': 'tooltip', 'data-placement': 'top'});
-            img.on('error', function() { $(this).replaceWith(_makePlaceholder(true, isFirst, isLast)); });
+            img.on('error', (function(iF,iL,pT) { return function() { $(this).replaceWith(_makePlaceholder(true, iF, iL, pT)); }; })(isFirst, isLast, u._phType));
             wagon.append(img);
         } else {
-            wagon.append(_makePlaceholder(true, isFirst, isLast));
+            wagon.append(_makePlaceholder(true, isFirst, isLast, u._phType));
         }
         wagon.append('<span class="compo-coach-no ts-nom ts-nom-inline">' + esc(u.label || u.nom || '') + '</span>');
         strip.append(wagon);
