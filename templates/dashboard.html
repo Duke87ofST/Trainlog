@@ -686,6 +686,7 @@
 
 <script>
 const username = "{{ username }}";
+const countriesBaseUrl = "{{ url_for('countries', username=username, cc='__CC__') }}";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -1241,7 +1242,7 @@ function loadCompletion() {
         tr.setAttribute("data-cc", country.cc);
         if (hasRegions) tr.style.cursor = "pointer";
         tr.innerHTML = `
-          <td class="country-flag-name">${chevronHtml}${flag} ${name}</td>
+          <td class="country-flag-name">${chevronHtml}<a href="${countriesBaseUrl.replace('__CC__', country.cc)}" style="color:inherit;text-decoration:none;" onclick="event.stopPropagation();">${flag} ${name}</a></td>
           <td>
             <div class="progress-container">
               <div class="progress-bar-container">
@@ -1264,7 +1265,7 @@ function loadCompletion() {
               const subTr = document.createElement("tr");
               subTr.className = `region-of-${country.cc} region-row`;
               subTr.innerHTML = `
-                <td class="region-flag-name">${rFlag} ${rName}</td>
+                <td class="region-flag-name"><a href="${countriesBaseUrl.replace('__CC__', region.cc)}" style="color:inherit;text-decoration:none;">${rFlag} ${rName}</a></td>
                 <td>
                   <div class="progress-container">
                     <div class="progress-bar-container region-progress-container">
