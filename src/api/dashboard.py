@@ -20,6 +20,25 @@ _cache = {}
 _CACHE_TTL = 300  # 5 minutes
 
 
+def _operator_logo(operator_name: str) -> str | None:
+    """Return the latest logo_url for an operator by short_name, or None."""
+    if not operator_name:
+        return None
+    with managed_cursor(mainConn) as cur:
+        row = cur.execute(
+            """
+            SELECT l.logo_url
+            FROM operators o
+            JOIN operator_logos l ON l.operator_id = o.uid
+            WHERE o.short_name = ?
+            ORDER BY l.effective_date DESC
+            LIMIT 1
+            """,
+            (operator_name,),
+        ).fetchone()
+    return row["logo_url"] if row else None
+
+
 def _cache_get(key):
     entry = _cache.get(key)
     if entry and time.time() - entry[0] < _CACHE_TTL:
@@ -800,8 +819,8 @@ def dashboard_year(username):
         "distance_comparisons": data.get("distance_comparisons", [])[:2],
         "duration_hours": data.get("duration_hours"),
         # Highlights
-        "top_operators_alltime": [{"name": r.operator, "trips": r.trips} for r in top_ops_alltime],
-        "top_operators_ytd":     [{"name": r.operator, "trips": r.trips} for r in top_ops_ytd],
+        "top_operators_alltime": [{"name": r.operator, "trips": r.trips, "logo": _operator_logo(r.operator)} for r in top_ops_alltime],
+        "top_operators_ytd":     [{"name": r.operator, "trips": r.trips, "logo": _operator_logo(r.operator)} for r in top_ops_ytd],
         "top_routes_alltime": [{"name": r.name, "count": r.count} for r in top_routes_alltime],
         "top_routes_ytd":     [{"name": r.name, "count": r.count} for r in top_routes_ytd],
         "top_countries_alltime": _countries(top_countries_alltime),
