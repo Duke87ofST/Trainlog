@@ -279,9 +279,17 @@ def dashboard_friends(username):
 def dashboard_leaderboard(username):
     """Per-type rank among all users by km (regardless of leaderboard opt-in)."""
     user_id = get_user_id(username)
+    try:
+        year = int(request.args.get("year", 0)) or None
+    except (ValueError, TypeError):
+        year = None
+
+    year_filter = "AND EXTRACT(YEAR FROM COALESCE(utc_start_datetime, start_datetime)) = :yr" if year else ""
+    p = {"uid": user_id, "yr": year} if year else {"uid": user_id}
+
     with pg_session() as pg:
         rows = pg.execute(
-            """
+            f"""
             WITH all_totals AS (
                 SELECT user_id, trip_type,
                        COUNT(*) AS trips,
@@ -289,6 +297,7 @@ def dashboard_leaderboard(username):
                 FROM trips
                 WHERE COALESCE(utc_start_datetime, start_datetime) < NOW()
                   AND NOT is_project
+                  {year_filter}
                 GROUP BY user_id, trip_type
                 UNION ALL
                 SELECT user_id, 'all' AS trip_type,
@@ -297,6 +306,7 @@ def dashboard_leaderboard(username):
                 FROM trips
                 WHERE COALESCE(utc_start_datetime, start_datetime) < NOW()
                   AND NOT is_project
+                  {year_filter}
                 GROUP BY user_id
             ),
             ranked AS (
@@ -311,7 +321,7 @@ def dashboard_leaderboard(username):
             WHERE user_id = :uid
             ORDER BY trip_type
             """,
-            {"uid": user_id},
+            p,
         ).fetchall()
 
     by_type = {

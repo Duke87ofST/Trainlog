@@ -592,7 +592,7 @@
       </div>
       <div class="col-md-6">
         <div class="dash-card">
-          <div class="dash-card-header"><i class="bi bi-trophy"></i>{{ leaderboard }}<span style="margin-left:auto; font-weight:400; color:var(--text-muted); text-transform:none; letter-spacing:0; font-size:0.78rem;">{{ allTime }}</span></div>
+          <div class="dash-card-header"><i class="bi bi-trophy"></i>{{ leaderboard }}<span id="leaderboard-scope-label" style="margin-left:auto; font-weight:400; color:var(--text-muted); text-transform:none; letter-spacing:0; font-size:0.78rem;">{{ allTime }}</span></div>
           <div id="rank-tabs-container"></div>
           <div class="dash-card-body" id="leaderboard-body">
             <div class="skeleton skeleton-line medium"></div>
@@ -784,14 +784,18 @@ function emptyState(msg) {
 
 // ─── Hero totals ─────────────────────────────────────────────────────────────
 
+let _totalsData = null;
+
 fetch(`/u/${username}/dashboard_totals`)
   .then(r => r.json())
   .then(d => {
+    _totalsData = d;
     document.getElementById("hero-trips").textContent     = fmt(d.total_trips);
     document.getElementById("hero-km").textContent        = fmt(d.total_km);
     document.getElementById("hero-countries").textContent = fmt(d.country_count);
     const h = Math.floor((d.total_duration_sec || 0) / 3600);
     document.getElementById("hero-hours").textContent = fmt(h);
+    if (_hlScope === "alltime" && _hlData) renderYearCard(_hlData);
   })
   .catch(() => {});
 
@@ -900,30 +904,43 @@ function countryFlags(list) {
 
 function renderYearCard(d) {
   const isCurrentYear = (d.year === new Date().getFullYear());
+  const isAllTime = (_hlScope === "alltime");
   document.getElementById("year-label").textContent =
-    d.year ? (isCurrentYear ? `${d.year} · YTD` : String(d.year)) : "";
+    isAllTime ? "{{ allTime }}" : d.year ? (isCurrentYear ? `${d.year} · YTD` : String(d.year)) : "";
   const yearEl = document.getElementById("year-body");
+
+  const trips = isAllTime && _totalsData ? _totalsData.total_trips : d.total_trips;
+  const km    = isAllTime && _totalsData ? _totalsData.total_km    : d.total_km;
+  const tripsArrow = isAllTime ? "" : changeArrow(d.trips_change);
+  const kmArrow    = isAllTime ? "" : changeArrow(d.km_change);
+
   const grid = `<div class="year-grid">
     <div class="year-stat">
-      <div class="year-stat-value">${fmt(d.total_trips)}${changeArrow(d.trips_change)}</div>
+      <div class="year-stat-value">${fmt(trips)}${tripsArrow}</div>
       <div class="year-stat-label">{{ trips }}</div>
     </div>
     <div class="year-stat">
-      <div class="year-stat-value">${fmt(d.total_km)}${changeArrow(d.km_change)}</div>
+      <div class="year-stat-value">${fmt(km)}${kmArrow}</div>
       <div class="year-stat-label">km</div>
     </div>
   </div>`;
   const yearRows = [];
-  if (d.duration_hours) yearRows.push(statRow("{{ hoursOnTrains }}", `${fmt(d.duration_hours)}h`));
-  if (d.country_count)  yearRows.push(statRow("{{ leaderboardCountry }}", fmt(d.country_count)));
-  if (d.distance_comparisons && d.distance_comparisons.length) {
-    const cmp = d.distance_comparisons[0];
-    const val = cmp.times >= 1 ? `${cmp.times}× ${cmp.name} ${cmp.emoji}` : `${cmp.percent}% of ${cmp.name} ${cmp.emoji}`;
-    yearRows.push(statRow("{{ distanceComparison }}", val));
-  }
-  if (d.busiest_month) {
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    yearRows.push(statRow("{{ busiestMonth }}", `${months[d.busiest_month.month - 1]} (${d.busiest_month.trips} {{ trips }})`));
+  if (isAllTime && _totalsData) {
+    const h = Math.floor((_totalsData.total_duration_sec || 0) / 3600);
+    if (h) yearRows.push(statRow("{{ hoursOnTrains }}", `${fmt(h)}h`));
+    if (_totalsData.country_count) yearRows.push(statRow("{{ leaderboardCountry }}", fmt(_totalsData.country_count)));
+  } else {
+    if (d.duration_hours) yearRows.push(statRow("{{ hoursOnTrains }}", `${fmt(d.duration_hours)}h`));
+    if (d.country_count)  yearRows.push(statRow("{{ leaderboardCountry }}", fmt(d.country_count)));
+    if (d.distance_comparisons && d.distance_comparisons.length) {
+      const cmp = d.distance_comparisons[0];
+      const val = cmp.times >= 1 ? `${cmp.times}× ${cmp.name} ${cmp.emoji}` : `${cmp.percent}% of ${cmp.name} ${cmp.emoji}`;
+      yearRows.push(statRow("{{ distanceComparison }}", val));
+    }
+    if (d.busiest_month) {
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      yearRows.push(statRow("{{ busiestMonth }}", `${months[d.busiest_month.month - 1]} (${d.busiest_month.trips} {{ trips }})`));
+    }
   }
   yearEl.innerHTML = grid + yearRows.join("");
 }
@@ -1068,16 +1085,29 @@ document.getElementById("hl-scope-toggle").addEventListener("click", e => {
   document.querySelectorAll("#hl-scope-toggle button.rank-metric-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("hl-year-select").classList.remove("active");
   btn.classList.add("active");
-  if (_hlData) { renderHighlights(_hlData, _hlScope); renderRecords(_hlData, _hlScope); renderMoney(_hlData, _hlScope); renderCO2(_hlData, _hlScope); updateScopeLabels(_hlScope, _hlYear); }
+  if (_hlData) { renderYearCard(_hlData); renderHighlights(_hlData, _hlScope); renderRecords(_hlData, _hlScope); renderMoney(_hlData, _hlScope); renderCO2(_hlData, _hlScope); updateScopeLabels(_hlScope, _hlYear); }
+  fetchLeaderboard(null);
 });
 
-// Year dropdown change
-document.getElementById("hl-year-select").addEventListener("change", function() {
+// Year dropdown — fire on both change and click-when-already-selected (coming from all-time)
+const _hlYearSel = document.getElementById("hl-year-select");
+function _applyYearScope() {
+  const wasAllTime = (_hlScope === "alltime");
   _hlScope = "ytd";
   document.querySelectorAll("#hl-scope-toggle button.rank-metric-btn").forEach(b => b.classList.remove("active"));
-  this.classList.add("active");
-  _hlYear = parseInt(this.value);
-  fetchYearData(_hlYear);
+  _hlYearSel.classList.add("active");
+  _hlYear = parseInt(_hlYearSel.value);
+  if (wasAllTime && _hlData) {
+    renderYearCard(_hlData); renderHighlights(_hlData, _hlScope); renderRecords(_hlData, _hlScope);
+    renderMoney(_hlData, _hlScope); renderCO2(_hlData, _hlScope); updateScopeLabels(_hlScope, _hlYear);
+  } else {
+    fetchYearData(_hlYear);
+  }
+  fetchLeaderboard(_hlYear);
+}
+_hlYearSel.addEventListener("change", _applyYearScope);
+_hlYearSel.addEventListener("click", function() {
+  if (_hlScope === "alltime") _applyYearScope();
 });
 
 // ─── Leaderboard rank ────────────────────────────────────────────────────────
@@ -1113,7 +1143,14 @@ function renderRank(data, type) {
     </div>`;
 }
 
-fetch(`/u/${username}/dashboard_leaderboard`)
+let _lbActiveType = "all";
+
+function fetchLeaderboard(year) {
+  document.getElementById("leaderboard-scope-label").textContent = year ? String(year) : "{{ allTime }}";
+  const url = year ? `/u/${username}/dashboard_leaderboard?year=${year}` : `/u/${username}/dashboard_leaderboard`;
+  document.getElementById("leaderboard-body").innerHTML =
+    `<div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div>`;
+  fetch(url)
   .then(r => r.json())
   .then(data => {
     const available = typeOrder.filter(t => data[t]);
@@ -1124,14 +1161,14 @@ fetch(`/u/${username}/dashboard_leaderboard`)
 
     const tabsEl = document.getElementById("rank-tabs-container");
     tabsEl.className = "rank-tabs";
-    let activeType = available.includes("all") ? "all" : available[0];
+    if (!available.includes(_lbActiveType)) _lbActiveType = available.includes("all") ? "all" : available[0];
 
     const typeTabs = available.map(t =>
-      `<span class="rank-tab${t === activeType ? " active" : ""}" data-type="${t}">${typeLabels[t] || t}</span>`
+      `<span class="rank-tab${t === _lbActiveType ? " active" : ""}" data-type="${t}">${typeLabels[t] || t}</span>`
     ).join("");
     const metricToggle = `<div class="rank-metric-toggle">
-      <button class="rank-metric-btn active" data-metric="km">km</button>
-      <button class="rank-metric-btn" data-metric="trips">{{ trips }}</button>
+      <button class="rank-metric-btn${_rankMetric === "km" ? " active" : ""}" data-metric="km">km</button>
+      <button class="rank-metric-btn${_rankMetric === "trips" ? " active" : ""}" data-metric="trips">{{ trips }}</button>
     </div>`;
     tabsEl.innerHTML = typeTabs + metricToggle;
 
@@ -1140,8 +1177,8 @@ fetch(`/u/${username}/dashboard_leaderboard`)
       if (tab) {
         tabsEl.querySelectorAll(".rank-tab").forEach(el => el.classList.remove("active"));
         tab.classList.add("active");
-        activeType = tab.dataset.type;
-        renderRank(data, activeType);
+        _lbActiveType = tab.dataset.type;
+        renderRank(data, _lbActiveType);
         return;
       }
       const btn = e.target.closest(".rank-metric-btn");
@@ -1149,15 +1186,18 @@ fetch(`/u/${username}/dashboard_leaderboard`)
         tabsEl.querySelectorAll(".rank-metric-btn").forEach(el => el.classList.remove("active"));
         btn.classList.add("active");
         _rankMetric = btn.dataset.metric;
-        renderRank(data, activeType);
+        renderRank(data, _lbActiveType);
       }
     });
 
-    renderRank(data, activeType);
+    renderRank(data, _lbActiveType);
   })
   .catch(() => {
     document.getElementById("leaderboard-body").innerHTML = emptyState("—");
   });
+}
+
+fetchLeaderboard(null);
 
 // ─── Friends ─────────────────────────────────────────────────────────────────
 

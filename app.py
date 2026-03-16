@@ -2634,7 +2634,9 @@ def landing():
         user = User.query.filter_by(username=username).first()
         if user:
             # Redirect to the user's default landing page
-            if user.default_landing == "trips":
+            if user.default_landing == "dashboard":
+                return redirect(url_for("user_dashboard", username=username))
+            elif user.default_landing == "trips":
                 return redirect(
                     url_for("dynamic_trips", username=username, time="trips")
                 )
