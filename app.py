@@ -1802,12 +1802,12 @@ def saveTripFromGPX(username, gpx_id):
         
         cleaning_result = clean_gps_route(
             raw_waypoints=raw_waypoints,
-            forwardRouting=forwardRouting,
+            forwardRouting=lambda path, routingType, options=None: forward_routing_core(routingType=routingType, path=path, flask_request=request, extra_args=options),
             trip_type=trip_type,
             deviation_threshold=800,       # Kept: Now defines the "validation corridor" width
             max_search_points=75
         )
-        
+
         if cleaning_result["success"]:
             # Use cleaned route
             path = cleaning_result["path"]
@@ -1891,7 +1891,7 @@ def previewSmartRouting(username, gpx_id, trip_type):
     # Clean the GPS route with smart routing
     cleaning_result = clean_gps_route(
         raw_waypoints=raw_waypoints,
-        forwardRouting=forwardRouting,
+        forwardRouting=lambda path, routingType, options=None: forward_routing_core(routingType=routingType, path=path, flask_request=request, extra_args=options),
         trip_type=trip_type,
         deviation_threshold=800,       # Kept: Now defines the "validation corridor" width
         max_search_points=75
