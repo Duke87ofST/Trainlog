@@ -187,7 +187,7 @@
             <tr>
               <td class="fw-semibold text-secondary">{{ year }}</td>
               <td class="fs-5">
-                {% for flag in residence_flags_by_year.get(year, [residence_country_by_year[year]]) %}{{ flag }}{% endfor %}
+                {% for flag in residence_flags_by_year.get(year, [residence_country_by_year[year]]) %}{{ flag }}{% if not loop.last %} {% endif %}{% endfor %}
               </td>
               <td class="tl-days-num">{{ days }}</td>
               <td>
@@ -215,7 +215,13 @@
 document.addEventListener("DOMContentLoaded", function () {
   const rawBlocks = [
     {% for item in country_blocks %}
-    { flag: '{{ item.flag }}', start: '{{ item.start }}', end: '{{ item.end }}', color: '{{ item.color }}' },
+    { flag: '{{ item.flag }}', start: '{{ item.start }}', end: '{{ item.end }}', color: '{{ item.color }}', borderColor: '{{ item.borderColor }}' },
+    {% endfor %}
+  ];
+
+  const rawResBlocks = [
+    {% for item in residence_blocks %}
+    { flag: '{{ item.flag }}', start: '{{ item.start }}', end: '{{ item.end }}', color: '{{ item.color }}', borderColor: '{{ item.borderColor }}' },
     {% endfor %}
   ];
 
@@ -233,12 +239,20 @@ document.addEventListener("DOMContentLoaded", function () {
     endMs:   new Date(b.end).getTime(),
   }));
 
+  const resBlocks = rawResBlocks.map(b => ({
+    ...b,
+    startMs: new Date(b.start).getTime(),
+    endMs:   new Date(b.end).getTime(),
+  }));
+
   // Layout constants
   const dpr         = window.devicePixelRatio || 1;
   const LABEL_H     = 70;   // floating label zone above ribbon
-  const RIBBON_H    = 50;   // ribbon height
-  const AXIS_H      = 38;   // axis below ribbon
-  const TOTAL_H     = LABEL_H + RIBBON_H + AXIS_H;
+  const RIBBON_H    = 50;   // main trip ribbon height
+  const RES_H       = 12;   // residence bar height
+  const RES_GAP     = 4;    // gap between main ribbon and residence bar
+  const AXIS_H      = 38;   // axis below residence bar
+  const TOTAL_H     = LABEL_H + RIBBON_H + RES_GAP + RES_H + AXIS_H;
   const PAD         = 24;   // horizontal padding
   const LABEL_R     = 15;   // radius of floating flag circles
   const NARROW_PX   = 32;   // block narrower than this → label above
@@ -320,14 +334,18 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.fillRect(b.x1, RY, b.w, RIBBON_H);
     }
 
-    // Thin white separators between blocks
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 1;
-    for (const b of sb) {
+    // Separators between blocks — more visible when adjacent blocks share the same colour
+    for (let i = 1; i < sb.length; i++) {
+      const prev = sb[i - 1], curr = sb[i];
+      const sameColor = prev.color === curr.color;
+      ctx.save();
+      ctx.strokeStyle = sameColor ? curr.borderColor : 'rgba(255,255,255,0.35)';
+      ctx.lineWidth   = sameColor ? 2 : 1;
       ctx.beginPath();
-      ctx.moveTo(b.x1, RY);
-      ctx.lineTo(b.x1, RY + RIBBON_H);
+      ctx.moveTo(curr.x1, RY);
+      ctx.lineTo(curr.x1, RY + RIBBON_H);
       ctx.stroke();
+      ctx.restore();
     }
 
     ctx.restore();
@@ -389,7 +407,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Dashed connecting line  (label → ribbon top)
       ctx.save();
-      ctx.strokeStyle = lb.color;
+      ctx.strokeStyle = lb.borderColor;
       ctx.lineWidth   = 1.5;
       ctx.setLineDash([3, 2]);
       ctx.beginPath();
@@ -400,7 +418,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.restore();
 
       // Tiny downward triangle at ribbon edge  (the "entonnoir" tip)
-      ctx.fillStyle = lb.color;
+      ctx.fillStyle = lb.borderColor;
       ctx.beginPath();
       ctx.moveTo(bCX - 4, RY - 1);
       ctx.lineTo(bCX + 4, RY - 1);
@@ -413,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.beginPath();
       ctx.arc(lb.labelX, LY, LABEL_R, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = lb.color;
+      ctx.strokeStyle = lb.borderColor;
       ctx.lineWidth   = 2;
       ctx.stroke();
 
@@ -424,8 +442,45 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.fillText(lb.flag, lb.labelX, LY);
     }
 
+    // ── Residence bar ────────────────────────────────────────────────
+    const resY = RY + RIBBON_H + RES_GAP;
+    const resR = RES_H / 2;
+
+    ctx.save();
+    ctx.clip(roundRectPath(PAD, resY, W - PAD * 2, RES_H, resR));
+    ctx.fillStyle = '#e9ecef';
+    ctx.fillRect(PAD, resY, W - PAD * 2, RES_H);
+
+    for (const rb of resBlocks) {
+      const rx1 = msToX(rb.startMs);
+      const rx2 = msToX(rb.endMs);
+      ctx.fillStyle = rb.color;
+      ctx.fillRect(rx1, resY, rx2 - rx1, RES_H);
+    }
+    ctx.restore();
+
+    // Separators between residence blocks
+    for (let i = 1; i < resBlocks.length; i++) {
+      const prev = resBlocks[i - 1], curr = resBlocks[i];
+      const rx = msToX(curr.startMs);
+      if (rx < PAD || rx > W - PAD) continue;
+      ctx.save();
+      ctx.strokeStyle = prev.color === curr.color ? curr.borderColor : 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(rx, resY);
+      ctx.lineTo(rx, resY + RES_H);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Residence bar border
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 1;
+    ctx.stroke(roundRectPath(PAD, resY, W - PAD * 2, RES_H, resR));
+
     // ── Year / month axis ────────────────────────────────────────────
-    drawAxis(RY + RIBBON_H);
+    drawAxis(resY + RES_H);
   }
 
   function drawAxis(y) {

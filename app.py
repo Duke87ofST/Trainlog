@@ -6706,6 +6706,18 @@ def getTimelineData(username):
         for f in sorted_flags
     }
 
+    def flag_border_color(cc, primary):
+        """Use 2nd national colour as border when primary is white, else primary."""
+        if primary.upper() == "#FFFFFF":
+            colors = national_colours.get(cc, [])
+            return colors[1] if len(colors) > 1 else "#555555"
+        return primary
+
+    flag_border_colors = {
+        f: flag_border_color(emoji_to_cc(f), flag_colors[f])
+        for f in sorted_flags
+    }
+
     # Build blocks using BOTH departure and arrival observations.
     # Departures: (trip.start, origin_flag) — where the person was at that moment.
     # Arrivals:   (trip.end,   dest_flag)   — where the person arrived.
@@ -6751,6 +6763,7 @@ def getTimelineData(username):
             "start": b["start"].isoformat(),
             "end": b["end"].isoformat(),
             "color": flag_colors[b["flag"]],
+            "borderColor": flag_border_colors[b["flag"]],
         }
         for b in merged
     ]
@@ -6782,23 +6795,99 @@ def getTimelineData(username):
             seconds = (overlap_end - overlap_start).total_seconds()
             country_time_by_year[year][flag] += seconds
 
-    # Step 2: determine residence country per year (primary = most time)
-    residence_country_by_year = {
-        year: max(countries.items(), key=lambda x: x[1])[0]
-        for year, countries in country_time_by_year.items()
-    }
+    # Step 2: build a continuous residence timeline.
+    #
+    # Approach: scan the full block list globally (not year-by-year).
+    # Starting from the first country, a residence only ends when a *different*
+    # country accumulates a qualifying contiguous stay (≥ MIN_STAY_DAYS with
+    # gaps ≤ MAX_GAP_DAYS bridged, and ≥ 50% density within that span).
+    # Until that threshold is crossed the original residence continues,
+    # even across years with no trips at all.
+    MIN_STAY_DAYS = 45
+    MAX_GAP_DAYS  = timedelta(days=21)
 
-    # Co-residences: all flags with > 1/3 of the calendar year
-    residence_flags_by_year = {}
-    for year, countries in country_time_by_year.items():
-        year_secs = (366 if calendar.isleap(year) else 365) * 86400
-        threshold = year_secs / 3
-        coflags = [f for f, s in countries.items() if s >= threshold]
-        if not coflags:
-            coflags = [residence_country_by_year[year]]
-        main = residence_country_by_year[year]
-        others = sorted([f for f in coflags if f != main])
-        residence_flags_by_year[year] = [main] + others
+    # Build per-flag interval lists from the already-merged trip blocks
+    all_intervals: dict = defaultdict(list)
+    for b in blocks:
+        s = datetime.fromisoformat(b["start"])
+        e = datetime.fromisoformat(b["end"])
+        all_intervals[b["flag"]].append((s, e))
+
+    def first_qualifying_streak(flag, after):
+        """Return the start of the first qualifying streak for *flag* after *after*,
+        or None if none exists."""
+        intervals = sorted((s, e) for s, e in all_intervals[flag] if e > after)
+        if not intervals:
+            return None
+        merged = []
+        for s, e in intervals:
+            if merged and s - merged[-1][1] <= MAX_GAP_DAYS:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], e))
+            else:
+                merged.append([s, e])
+        for span_s, span_e in merged:
+            if (span_e - span_s).days < MIN_STAY_DAYS:
+                continue
+            span_secs = (span_e - span_s).total_seconds()
+            present_secs = sum(
+                (min(e, span_e) - max(s, span_s)).total_seconds()
+                for s, e in intervals if s < span_e and e > span_s
+            )
+            if present_secs / span_secs >= 0.5:
+                return span_s
+        return None
+
+    # Walk forward: find the earliest qualifying streak in any non-current country
+    timeline_start = datetime.fromisoformat(blocks[0]["start"])
+    current_flag   = blocks[0]["flag"]
+    res_periods    = []   # [(flag, start, end)]
+    res_start      = timeline_start
+
+    while True:
+        earliest = None   # (streak_start, flag)
+        for flag in all_intervals:
+            if flag == current_flag:
+                continue
+            t = first_qualifying_streak(flag, after=res_start)
+            if t is not None and (earliest is None or t < earliest[0]):
+                earliest = (t, flag)
+
+        if earliest:
+            change_t, new_flag = earliest
+            res_periods.append((current_flag, res_start, change_t))
+            current_flag = new_flag
+            res_start    = change_t
+        else:
+            break
+
+    res_periods.append((current_flag, res_start, datetime.now()))
+
+    # ── Derive per-year data from the continuous residence periods ────
+    residence_flags_by_year: dict   = {}
+    residence_country_by_year: dict = {}
+    for year in country_time_by_year:
+        year_start = datetime(year, 1, 1)
+        year_end   = datetime(year + 1, 1, 1)
+        year_flags = list(dict.fromkeys(
+            flag for flag, rs, re in res_periods
+            if rs < year_end and re > year_start
+        ))
+        if not year_flags:
+            year_flags = [max(country_time_by_year[year], key=country_time_by_year[year].get)]
+        residence_flags_by_year[year]   = year_flags
+        residence_country_by_year[year] = year_flags[0]
+
+    # ── Residence blocks for the canvas (already continuous) ─────────
+    residence_blocks = [
+        {
+            "flag":        flag,
+            "start":       rs.isoformat(),
+            "end":         re.isoformat(),
+            "color":       flag_colors[flag],
+            "borderColor": flag_border_colors[flag],
+        }
+        for flag, rs, re in res_periods
+    ]
 
     # Step 3: abroad = total time minus ALL residence countries (co-residences don't count as abroad)
     seconds_abroad_by_year = {}
@@ -6813,13 +6902,13 @@ def getTimelineData(username):
         year: round(seconds / 86400, 1)
         for year, seconds in seconds_abroad_by_year.items()
     }
-    return blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year
+    return blocks, residence_blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year
 
 
 @app.route("/u/<username>/timeline")
 @login_required
 def timeline(username):
-    blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year = getTimelineData(username)
+    blocks, residence_blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year = getTimelineData(username)
     # Pass to the template
     return render_template(
         "timeline.html",
@@ -6828,6 +6917,7 @@ def timeline(username):
         days_abroad_by_year=days_abroad_by_year,
         residence_country_by_year=residence_country_by_year,
         residence_flags_by_year=residence_flags_by_year,
+        residence_blocks=residence_blocks,
         nav="bootstrap/navigation.html",
         isCurrent=has_current_trip(get_user_id()),
         **lang[session["userinfo"]["lang"]],
@@ -6838,7 +6928,7 @@ def timeline(username):
 @app.route("/public/<username>/timeline")
 @public_required
 def p_timeline(username):
-    blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year = getTimelineData(username)
+    blocks, residence_blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year = getTimelineData(username)
     # Pass to the template
     return render_template(
         "timeline.html",
@@ -6847,6 +6937,7 @@ def p_timeline(username):
         days_abroad_by_year=days_abroad_by_year,
         residence_country_by_year=residence_country_by_year,
         residence_flags_by_year=residence_flags_by_year,
+        residence_blocks=residence_blocks,
         nav="bootstrap/public_nav.html",
         isCurrent=has_current_trip(get_user_id()),
         **lang[session["userinfo"]["lang"]],
