@@ -274,6 +274,24 @@ document.addEventListener("DOMContentLoaded", function () {
   container.appendChild(hint);
 
   const ctx = canvas.getContext('2d');
+  const nowMs = Date.now();
+
+  // Hatch pattern: diagonal white stripes for future portions
+  function makeHatch() {
+    const sz = 7;
+    const pc = document.createElement('canvas');
+    pc.width = sz; pc.height = sz;
+    const ptx = pc.getContext('2d');
+    ptx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ptx.lineWidth = 2;
+    ptx.beginPath();
+    ptx.moveTo(0, sz); ptx.lineTo(sz, 0);
+    ptx.moveTo(-sz, sz); ptx.lineTo(0, 0);
+    ptx.moveTo(sz, sz * 2); ptx.lineTo(sz * 2, sz);
+    ptx.stroke();
+    return ctx.createPattern(pc, 'repeat');
+  }
+  const hatchPat = makeHatch();
 
   function msToX(ms) {
     return PAD + (ms - minMs) * pxPerMs + panPx;
@@ -329,9 +347,24 @@ document.addEventListener("DOMContentLoaded", function () {
     ctx.fillStyle = '#e9ecef';
     ctx.fillRect(PAD, RY, W - PAD * 2, RIBBON_H);
 
+    const nowX = msToX(nowMs);
     for (const b of sb) {
-      ctx.fillStyle = b.color;
-      ctx.fillRect(b.x1, RY, b.w, RIBBON_H);
+      // Past portion — solid
+      const pastX2 = Math.min(b.x2, nowX);
+      if (pastX2 > b.x1) {
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x1, RY, pastX2 - b.x1, RIBBON_H);
+      }
+      // Future portion — dimmed + hatched
+      const futX1 = Math.max(b.x1, nowX);
+      if (futX1 < b.x2) {
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = b.color;
+        ctx.fillRect(futX1, RY, b.x2 - futX1, RIBBON_H);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = hatchPat;
+        ctx.fillRect(futX1, RY, b.x2 - futX1, RIBBON_H);
+      }
     }
 
     // Separators between blocks — more visible when adjacent blocks share the same colour
@@ -346,6 +379,18 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.lineTo(curr.x1, RY + RIBBON_H);
       ctx.stroke();
       ctx.restore();
+    }
+
+    // "Today" line inside ribbon
+    if (nowX > PAD && nowX < W - PAD) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(nowX, RY);
+      ctx.lineTo(nowX, RY + RIBBON_H);
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
 
     ctx.restore();
@@ -454,9 +499,38 @@ document.addEventListener("DOMContentLoaded", function () {
     for (const rb of resBlocks) {
       const rx1 = msToX(rb.startMs);
       const rx2 = msToX(rb.endMs);
-      ctx.fillStyle = rb.color;
-      ctx.fillRect(rx1, resY, rx2 - rx1, RES_H);
+      // Past portion
+      const rpastX2 = Math.min(rx2, nowX);
+      if (rpastX2 > rx1) {
+        ctx.fillStyle = rb.color;
+        ctx.fillRect(rx1, resY, rpastX2 - rx1, RES_H);
+      }
+      // Future portion — dimmed + hatched
+      const rfutX1 = Math.max(rx1, nowX);
+      if (rfutX1 < rx2) {
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = rb.color;
+        ctx.fillRect(rfutX1, resY, rx2 - rfutX1, RES_H);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = hatchPat;
+        ctx.fillRect(rfutX1, resY, rx2 - rfutX1, RES_H);
+      }
     }
+    // Extend last residence hatched to the right edge
+    if (resBlocks.length) {
+      const last = resBlocks[resBlocks.length - 1];
+      const extX1 = Math.max(msToX(last.startMs), nowX);
+      const extX2 = W - PAD;
+      if (extX2 > extX1) {
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = last.color;
+        ctx.fillRect(extX1, resY, extX2 - extX1, RES_H);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = hatchPat;
+        ctx.fillRect(extX1, resY, extX2 - extX1, RES_H);
+      }
+    }
+
     ctx.restore();
 
     // Separators between residence blocks
