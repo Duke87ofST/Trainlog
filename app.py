@@ -6747,7 +6747,8 @@ def getTimelineData(username):
             current_flag = flag
         # same country → extend silently
 
-    raw_blocks.append({"flag": current_flag, "start": block_start, "end": datetime.now()})
+    timeline_end = max(datetime.now(), observations[-1][0])
+    raw_blocks.append({"flag": current_flag, "start": block_start, "end": timeline_end})
 
     # Merge consecutive blocks with the same country (can still happen after dedup)
     merged = []
@@ -6860,7 +6861,7 @@ def getTimelineData(username):
         else:
             break
 
-    res_periods.append((current_flag, res_start, datetime.now()))
+    res_periods.append((current_flag, res_start, timeline_end))
 
     # ── Derive per-year data from the continuous residence periods ────
     residence_flags_by_year: dict   = {}

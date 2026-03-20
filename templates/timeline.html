@@ -81,7 +81,7 @@
     letter-spacing: .02em;
   }
   .tl-table th {
-    color: #495057;
+    color: #fff;
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: .07em;
@@ -272,6 +272,24 @@ document.addEventListener("DOMContentLoaded", function () {
   hint.id = 'tl-hint';
   hint.textContent = 'Scroll / pinch to zoom  ·  drag to pan';
   container.appendChild(hint);
+
+  // House icon pinned to the left of the residence bar
+  const resIcon = document.createElement('i');
+  resIcon.className = 'fa-solid fa-house';
+  resIcon.style.cssText = [
+    'position:absolute',
+    `top:${LABEL_H + RIBBON_H + RES_GAP + Math.round(RES_H / 2)}px`,
+    'left:4px',
+    'transform:translateY(-50%)',
+    'font-size:10px',
+    'color:#6c757d',
+    'pointer-events:none',
+    'line-height:0',
+    'display:block',
+    'width:0',
+    'overflow:visible',
+  ].join(';');
+  container.appendChild(resIcon);
 
   const ctx = canvas.getContext('2d');
   const nowMs = Date.now();
@@ -558,8 +576,18 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function drawAxis(y) {
-    const minYear = new Date(minMs).getFullYear();
-    const maxYear = new Date(maxMs).getFullYear() + 1;
+    const minYear    = new Date(minMs).getFullYear();
+    const maxYear    = new Date(maxMs).getFullYear() + 1;
+    const msPerYear  = 365.25 * 86400000;
+    const msPerMonth = 30.44  * 86400000;
+    const pxPerYear  = pxPerMs * msPerYear;
+
+    // Pick a year label step so labels (~34px wide) never crowd each other
+    const yearStep = pxPerYear >= 55 ? 1
+                   : pxPerYear >= 28 ? 2
+                   : pxPerYear >= 14 ? 5
+                   : pxPerYear >=  6 ? 10
+                   : 25;
 
     // Baseline
     ctx.strokeStyle = '#dee2e6';
@@ -569,10 +597,12 @@ document.addEventListener("DOMContentLoaded", function () {
     ctx.lineTo(W - PAD, y);
     ctx.stroke();
 
-    // Year ticks + labels
+    // Year ticks + labels — only on multiples of yearStep, only inside the timeline
+    const LABEL_HALF = 18; // half-width of a 4-digit year label at 11px bold
     for (let yr = minYear; yr <= maxYear; yr++) {
+      if (yr % yearStep !== 0) continue;
       const x = msToX(new Date(yr, 0, 1).getTime());
-      if (x < PAD - 30 || x > W - PAD + 30) continue;
+      if (x < PAD || x > W - PAD) continue;
 
       ctx.strokeStyle = '#adb5bd';
       ctx.lineWidth   = 1;
@@ -581,16 +611,18 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.lineTo(x, y + 8);
       ctx.stroke();
 
+      // Clamp label so it never spills outside the padded area
+      const lx = Math.max(x, PAD + LABEL_HALF);
       ctx.fillStyle    = '#495057';
       ctx.font         = 'bold 11px sans-serif';
       ctx.textAlign    = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillText(yr, x, y + 10);
+      ctx.fillText(yr, lx, y + 10);
     }
 
-    // Month ticks (when 1 month ≥ 14 px)
-    const msPerMonth = 30.44 * 86400000;
+    // Month ticks — only when a month is at least 14 px wide
     if (pxPerMs * msPerMonth >= 14) {
+      const showNames = pxPerMs * msPerMonth >= 40;
       for (let yr = minYear; yr <= maxYear; yr++) {
         for (let mo = 1; mo < 12; mo++) {
           const x = msToX(new Date(yr, mo, 1).getTime());
@@ -601,8 +633,7 @@ document.addEventListener("DOMContentLoaded", function () {
           ctx.moveTo(x, y);
           ctx.lineTo(x, y + 4);
           ctx.stroke();
-          // Month name when zoomed in further
-          if (pxPerMs * msPerMonth >= 40) {
+          if (showNames) {
             const name = new Date(yr, mo, 1).toLocaleString('default', { month: 'short' });
             ctx.fillStyle    = '#adb5bd';
             ctx.font         = '9px sans-serif';
@@ -679,36 +710,56 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
 
-  // Touch pan
+  // ── Unified touch handler (pan + pinch-to-zoom) ─────────────────
   let t0 = 0, pPan = 0;
+  let pinchD0 = 0, pinchPxPerMs0 = 0, pinchAnchorMs = 0, pinchMidX0 = 0;
+
   canvas.addEventListener('touchstart', e => {
-    t0 = e.touches[0].clientX; pPan = panPx;
-  }, { passive: true });
-  canvas.addEventListener('touchmove', e => {
     e.preventDefault();
-    panPx = pPan + (e.touches[0].clientX - t0);
-    clampPan(); render();
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches.length === 1) {
+      t0   = e.touches[0].clientX;
+      pPan = panPx;
+    } else if (e.touches.length === 2) {
+      const x1 = e.touches[0].clientX - rect.left;
+      const x2 = e.touches[1].clientX - rect.left;
+      pinchD0        = Math.abs(x1 - x2);
+      pinchPxPerMs0  = pxPerMs;
+      pinchMidX0     = (x1 + x2) / 2;
+      // Lock the time value at the midpoint — this stays fixed during the zoom
+      pinchAnchorMs  = minMs + (pinchMidX0 - PAD - panPx) / pxPerMs;
+    }
   }, { passive: false });
 
-  // Pinch zoom
-  let pinchD0 = 0, pinchPxPerMs0 = 0;
-  canvas.addEventListener('touchstart', e => {
-    if (e.touches.length === 2) {
-      pinchD0 = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY);
-      pinchPxPerMs0 = pxPerMs;
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const rect    = canvas.getBoundingClientRect();
+    const minZoom = (W - PAD * 2) / totalMs;
+    if (e.touches.length === 1) {
+      panPx = pPan + (e.touches[0].clientX - t0);
+      clampPan(); render();
+    } else if (e.touches.length === 2) {
+      const x1  = e.touches[0].clientX - rect.left;
+      const x2  = e.touches[1].clientX - rect.left;
+      const d   = Math.abs(x1 - x2);
+      const mid = (x1 + x2) / 2;
+      // Scale around the pinch midpoint
+      pxPerMs = Math.max(minZoom, Math.min(minZoom * 3000,
+                  pinchPxPerMs0 * d / Math.max(pinchD0, 1)));
+      // Keep pinchAnchorMs fixed at the current midpoint position,
+      // and also apply any lateral translation of the midpoint
+      panPx = mid - PAD - (pinchAnchorMs - minMs) * pxPerMs;
+      clampPan(); render();
+    }
+  }, { passive: false });
+
+  // When a finger is lifted mid-gesture, re-anchor 1-finger pan so there's no jump
+  canvas.addEventListener('touchend', e => {
+    if (e.touches.length === 1) {
+      t0   = e.touches[0].clientX;
+      pPan = panPx;
     }
   }, { passive: true });
-  canvas.addEventListener('touchmove', e => {
-    if (e.touches.length !== 2) return;
-    const d      = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY);
-    const minZoom = (W - PAD * 2) / totalMs;
-    pxPerMs = Math.max(minZoom, Math.min(minZoom * 3000, pinchPxPerMs0 * d / pinchD0));
-    clampPan(); render();
-  }, { passive: false });
 
   window.addEventListener('resize', resize);
   resize();
