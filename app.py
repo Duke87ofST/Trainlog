@@ -6664,9 +6664,12 @@ def getTimelineData(username):
     flag_set = set()
     trip_data = []
 
+    MAX_YEAR = 2100
     for row in trips:
         start_datetime = datetime.fromisoformat(row["utc_filtered_start_datetime"])
         end_datetime = datetime.fromisoformat(row["utc_filtered_end_datetime"])
+        if start_datetime.year > MAX_YEAR or end_datetime.year > MAX_YEAR:
+            continue
         origin_flag = row["origin_station"][:2]
         dest_flag = row["destination_station"][:2]
         flag_set.update([origin_flag, dest_flag])
