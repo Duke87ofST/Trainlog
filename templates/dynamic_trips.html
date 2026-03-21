@@ -1949,7 +1949,7 @@ function displayAssociatedTags(tags) {
             .addClass('tag-blob')
             .css('background-color', tag.colour)
             .css('color', getTextColor(tag.colour))
-            .html(tag.name + icon) // Use .html to add the icon
+            .text(tag.name).append(icon) // Use .text for safety, then append icon HTML
             .on('click', function() {
                 if (allTripsHaveTag) {
                     detachTag(tag.uid);
