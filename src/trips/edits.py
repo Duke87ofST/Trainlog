@@ -1,3 +1,5 @@
+import datetime
+
 from flask import abort
 from sqlalchemy import text
 
@@ -157,6 +159,8 @@ def bulk_edit_trips(
     if not safe_fields and not time_offset_minutes:
         return False, "No valid fields to update"
 
+    last_modified = datetime.datetime.now()
+
     try:
         placeholders = ", ".join(["?"] * len(trip_ids))
 
@@ -168,9 +172,9 @@ def bulk_edit_trips(
             if cursor.fetchone()["c"] != len(trip_ids):
                 abort(401)
 
+            set_parts = ["last_modified = ?"]
+            params = [last_modified]
             if safe_fields:
-                set_parts = []
-                params = []
                 for col, val in safe_fields.items():
                     if col == "notes" and notes_append:
                         set_parts.append(
@@ -181,11 +185,11 @@ def bulk_edit_trips(
                         set_parts.append(f"{col} = ?")
                         params.append(val if val != "" else None)
 
-                params.extend([username] + trip_ids)
-                cursor.execute(
-                    f"UPDATE trip SET {', '.join(set_parts)} WHERE username = ? AND uid IN ({placeholders})",
-                    params,
-                )
+            params.extend([username] + trip_ids)
+            cursor.execute(
+                f"UPDATE trip SET {', '.join(set_parts)} WHERE username = ? AND uid IN ({placeholders})",
+                params,
+            )
 
             if time_offset_minutes:
                 modifier = f"{'+' if time_offset_minutes >= 0 else ''}{time_offset_minutes} minutes"
@@ -203,9 +207,9 @@ def bulk_edit_trips(
 
         with pg_session() as pg:
             for trip_id in trip_ids:
+                pg_set_parts = ["last_modified = :last_modified"]
+                pg_params = {"trip_id": int(trip_id), "last_modified": last_modified}
                 if safe_fields:
-                    pg_set_parts = []
-                    pg_params = {"trip_id": int(trip_id)}
                     for col, val in safe_fields.items():
                         if col == "notes" and notes_append:
                             pg_set_parts.append(
@@ -215,10 +219,10 @@ def bulk_edit_trips(
                         else:
                             pg_set_parts.append(f"{col} = :{col}")
                             pg_params[col] = val if val != "" else None
-                    pg.execute(
-                        text(f"UPDATE trips SET {', '.join(pg_set_parts)} WHERE trip_id = :trip_id"),
-                        pg_params,
-                    )
+                pg.execute(
+                    text(f"UPDATE trips SET {', '.join(pg_set_parts)} WHERE trip_id = :trip_id"),
+                    pg_params,
+                )
 
                 if time_offset_minutes:
                     offset_secs = time_offset_minutes * 60
