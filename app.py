@@ -8250,7 +8250,10 @@ def requestFriend(username, friendId):
 
 
 def getFriendsRequestsNumber():
-    user_id = User.query.filter_by(username=getUser()).first().uid
+    user = User.query.filter_by(username=getUser()).first()
+    if user is None:
+        return ""
+    user_id = user.uid
     incoming_requests = (
         authDb.session.query(User.uid, User.username)
         .join(Friendship, User.uid == Friendship.user_id)
