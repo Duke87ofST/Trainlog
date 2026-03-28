@@ -241,7 +241,6 @@ def getCountriesFromPath(path, type, routing_details=None, powerType=None):
     else:
         power_type = routing_details.get("powerType", "auto") if routing_details else "auto"
 
-    # Always use elec/nonelec format for all trip types.
     # For train/rail with power_type="auto", derive electrification from OSM segment data.
     use_osm_electrification = (
         type in ("train", "rail") and
@@ -249,6 +248,10 @@ def getCountriesFromPath(path, type, routing_details=None, powerType=None):
         routing_details and
         "electrified" in routing_details
     )
+
+    # Use elec/nonelec format only when we have definitive power information.
+    # Train/rail with "auto" and no OSM data → simple distance format (no barrel/lightning shown).
+    use_electrification = not (type in ("train", "rail") and power_type == "auto" and not use_osm_electrification)
 
     electrification_map = {}
     if use_osm_electrification:
@@ -288,17 +291,20 @@ def getCountriesFromPath(path, type, routing_details=None, powerType=None):
             segment_countries[country] = segment_countries.get(country, 0) + 1
         for country, count in segment_countries.items():
             if country not in countries:
-                countries[country] = {"elec": 0, "nonelec": 0}
+                countries[country] = {"elec": 0, "nonelec": 0} if use_electrification else 0
             segment_country_distance = (segment_distance * count) / len(interpolated_points)
-            if is_electrified:
-                countries[country]["elec"] += segment_country_distance
+            if use_electrification:
+                if is_electrified:
+                    countries[country]["elec"] += segment_country_distance
+                else:
+                    countries[country]["nonelec"] += segment_country_distance
             else:
-                countries[country]["nonelec"] += segment_country_distance
+                countries[country] += segment_country_distance
 
     if countries == {}:
         country_data = getCountryFromCoordinates(lat=path[0]["lat"], lng=path[0]["lng"])
         country = country_data["countryCode"] if country_data else "UN"
-        countries = {country: {"elec": 0, "nonelec": 0}}
+        countries = {country: {"elec": 0, "nonelec": 0} if use_electrification else 0}
 
     # For OSM-derived electrification, snap near-uniform segments to 100%
     # to correct for untagged segments (not applicable to explicit powerType).
