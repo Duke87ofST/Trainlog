@@ -1045,7 +1045,7 @@ def inject_distinct_types():
         "walk": "fa-solid fa-person-hiking",
         "cycle": "fa-solid fa-bicycle",
         "car": "fa-solid fa-car-side",
-        "scooter": "fa-solid fa-motorcycle",
+        "scooter": "bi bi-scooter",
         "funicular": "fa-solid fa-mountain",
         "rail": "fa-solid fa-dumbbell",
         "ski": "fa-solid fa-person-skiing",
