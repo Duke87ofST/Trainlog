@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Zvolte typ výletu pro tento GPX soubor:",
     "failed_to_save_trip": "Uložení výletu z GPX se nezdařilo.",
     "trip_saved_successfully": "Výlet byl úspěšně uložen!",
-    "advanced_gpx_import": "Pokročilý import GPX",
     "drop_gpx_files": "Přetáhněte sem GPX soubory nebo klikněte pro procházení",
     "gpx_only": "Pouze GPX soubory (podporuje formát Maprika s automatickou detekcí úseků)",
     "analyze_files": "Analyzovat soubory",

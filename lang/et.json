@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Valige selle GPX-faili reisitüüp:",
     "failed_to_save_trip": "Reisi salvestamine GPX-ist ebaõnnestus.",
     "trip_saved_successfully": "Reis edukalt salvestatud!",
-    "advanced_gpx_import": "Täiustatud GPX-i import",
     "drop_gpx_files": "Lohista GPX-failid siia või klõpsa, et sirvida",
     "gpx_only": "Ainult GPX-failid (toetab Maprika vormingut automaatse lõigu tuvastamisega)",
     "analyze_files": "Analüüsi faile",

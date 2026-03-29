@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Valitse tämän GPX-tiedoston matkatyyppi:",
     "failed_to_save_trip": "Matkan tallentaminen GPX-tiedostosta epäonnistui.",
     "trip_saved_successfully": "Matka tallennettu onnistuneesti!",
-    "advanced_gpx_import": "Edistynyt GPX-tuonti",
     "drop_gpx_files": "Pudota GPX-tiedostot tähän tai napsauta selaa-painiketta",
     "gpx_only": "Vain GPX-tiedostot (tukee Maprika-muotoa automaattisella etapin tunnistuksella)",
     "analyze_files": "Analysoi tiedostot",

@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Velg type tur for denne GPX-filen:",
     "failed_to_save_trip": "Kunne ikke lagre tur fra GPX.",
     "trip_saved_successfully": "Tur lagret vellykket!",
-    "advanced_gpx_import": "Avansert GPX-import",
     "drop_gpx_files": "Slipp GPX-filer her eller klikk for å bla gjennom",
     "gpx_only": "Kun GPX-filer (støtter Maprika-format med automatisk etappegjenkjenning)",
     "analyze_files": "Analyser filer",

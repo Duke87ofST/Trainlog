@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Kies het type reis voor dit GPX-bestand:",
     "failed_to_save_trip": "Reis opslaan vanuit GPX mislukt.",
     "trip_saved_successfully": "Reis succesvol opgeslagen!",
-    "advanced_gpx_import": "Geavanceerde GPX-import",
     "drop_gpx_files": "Plaats GPX-bestanden hier of klik om te bladeren",
     "gpx_only": "Alleen GPX-bestanden (ondersteunt Maprika-formaat met automatische segmentdetectie)",
     "analyze_files": "Bestanden analyseren",

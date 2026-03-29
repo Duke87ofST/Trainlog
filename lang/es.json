@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Elige el tipo de viaje para este archivo GPX:",
     "failed_to_save_trip": "Error al guardar el viaje desde GPX.",
     "trip_saved_successfully": "¡Viaje guardado con éxito!",
-    "advanced_gpx_import": "Importación GPX Avanzada",
     "drop_gpx_files": "Suelta archivos GPX aquí o haz clic para explorar",
     "gpx_only": "Solo archivos GPX (admite el formato Maprika con detección automática de tramos)",
     "analyze_files": "Analizar Archivos",
