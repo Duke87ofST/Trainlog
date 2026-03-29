@@ -2,10 +2,9 @@
 {% block content %}
 
 {% include "bootstrap/navigation.html" %}
+{% include "includes/trip_cards.html" %}
 <style>
-  .form-control {
-      width: 100%;
-  }
+  .form-control { width: 100%; }
   #progress-bar {
     height: 20px;
     background: linear-gradient(to right, #007bff, #0056b3);
@@ -13,30 +12,7 @@
     border-radius: 10px;
     transition: width 0.3s ease;
   }
-  #progress-label {
-    font-size: 14px;
-    font-weight: bold;
-  }
-  .trip-card {
-    border: 2px solid #dee2e6;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-    transition: all 0.2s;
-    background: white;
-  }
-  .trip-card.selected {
-    border-color: #198754;
-    background: #f8fff8;
-    box-shadow: 0 2px 8px rgba(25, 135, 84, 0.15);
-  }
-  .trip-card:hover {
-    border-color: #adb5bd;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-  .trip-header { font-weight: 600; font-size: 1.1em; }
-  .trip-details { color: #6c757d; font-size: 0.9em; margin-top: 0.5rem; }
+  #progress-label { font-size: 14px; font-weight: bold; }
   #dropZone.dragover {
     border-color: #0d6efd !important;
     background: #e7f1ff !important;
@@ -51,18 +27,8 @@
     margin: 0.25rem;
     font-size: 0.875em;
   }
-  .file-item .remove {
-    cursor: pointer;
-    margin-left: 0.5rem;
-    color: #dc3545;
-    font-weight: bold;
-  }
-  .file-item .remove:hover {
-    color: #bb2d3b;
-  }
-  .trip-type-select {
-    min-width: 150px;
-  }
+  .file-item .remove { cursor: pointer; margin-left: 0.5rem; color: #dc3545; font-weight: bold; }
+  .file-item .remove:hover { color: #bb2d3b; }
 </style>
 
 <!-- Simple upload progress overlay -->
@@ -359,55 +325,26 @@ $('#uploadForm').on('submit', function(e) {
 const tripTypes = {{ trip_types|tojson }};
 
 function renderTrips(trips) {
-  let html = '';
-  trips.forEach(function(t, i) {
-    const origin = t.origin || '?';
-    const dest = t.destination || '?';
-    const distance = t.distance ? (Math.round(t.distance / 100) / 10) + ' km' : '';
-    const duration = t.duration ? formatDuration(t.duration) : '';
-    const maprikaName = t.maprika_name || '';
-
-    html += '<div class="trip-card selected" data-index="' + i + '">';
-    html += '<div class="d-flex justify-content-between align-items-start">';
-    html += '<div class="flex-grow-1">';
-    html += '<div class="trip-header">' + origin + ' → ' + dest + '</div>';
-    if (maprikaName) {
-      html += '<div class="text-muted" style="font-size: 0.85em; margin-top: 0.25rem;"><i class="bi bi-tag me-1"></i>' + maprikaName + '</div>';
-    }
-    html += '</div>';
-    html += '<input type="checkbox" class="trip-checkbox form-check-input ms-2" checked style="width: 1.25rem; height: 1.25rem;">';
-    html += '</div>';
-    html += '<div class="trip-details">';
-    html += '<div class="row align-items-center mt-2">';
-    html += '<div class="col-md-4">';
-    html += '<select class="form-select form-select-sm trip-type-select" data-index="' + i + '">';
-    Object.keys(tripTypes).forEach(function(key) {
-      const selected = key === t.suggested_type ? 'selected' : '';
-      html += '<option value="' + key + '" ' + selected + '>' + tripTypes[key] + '</option>';
-    });
-    html += '</select>';
-    html += '</div>';
-    html += '<div class="col-md-8">';
-    const details = [];
-    if (t.start_time) details.push(t.start_time);
-    if (distance) details.push(distance);
-    if (duration) details.push(duration);
-    if (details.length) html += details.join(' · ');
-    html += '</div>';
-    html += '</div>';
-    if (t.notes) {
-      html += '<div class="mt-2"><small class="text-muted">' + t.notes + '</small></div>';
-    }
-    html += '</div></div>';
+  // Normalise GPX trip format to the shared display format
+  const normalised = trips.map(function(t) {
+    return {
+      display: {
+        origin:    t.origin || '?',
+        destination: t.destination || '?',
+        type:      t.suggested_type || '',
+        date:      t.start_time || '',
+        distance:  t.distance ? (Math.round(t.distance / 100) / 10) + ' km' : '',
+        duration:  t.duration || 0,
+        line_name: t.maprika_name ? '<i class="bi bi-tag me-1"></i>' + t.maprika_name : '',
+        notes: t.notes || '',
+      },
+      _original: t,
+    };
   });
-  $('#tripsList').html(html);
-}
-
-function formatDuration(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return hours + 'h ' + minutes + 'm';
-  return minutes + 'm';
+  renderTripCards(normalised, 'tripsList', {
+    showTypeSelect: true,
+    tripTypes: tripTypes,
+  });
 }
 
 $(document).on('click', '.trip-card', function(e) {
