@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Виберіть тип поїздки для цього файлу GPX:",
     "failed_to_save_trip": "Не вдалося зберегти поїздку з GPX.",
     "trip_saved_successfully": "Поїздку успішно збережено!",
-    "advanced_gpx_import": "Розширене імпортування GPX",
     "drop_gpx_files": "Перетягніть файли GPX сюди або натисніть, щоб переглянути",
     "gpx_only": "Лише файли GPX (підтримує формат Maprika з автоматичним виявленням сегментів)",
     "analyze_files": "Аналізувати файли",

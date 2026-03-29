@@ -181,11 +181,6 @@
           <div class="dropdown-divider"></div>
           <!-- GPX Section -->
           <h6 class="dropdown-header">GPX</h6>
-          {% if is_alpha%}
-          <a class="dropdown-item" href="{{ url_for('upload_gpx_advanced', username=username) }}">
-            <i class="bi bi-cloud-upload-fill"></i> {{advanced_gpx_import}}
-          </a>
-          {% endif %}         
           <a class="dropdown-item" href="{{ url_for('upload_gpx', username=username) }}">
             <i class="bi bi-cloud-upload"></i> {{upload_gpx_files}}
           </a>

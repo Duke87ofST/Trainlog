@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Bu GPX dosyası için gezi türünü seçin:",
     "failed_to_save_trip": "GPX'ten gezi kaydetme başarısız oldu.",
     "trip_saved_successfully": "Gezi başarıyla kaydedildi!",
-    "advanced_gpx_import": "Gelişmiş GPX İçe Aktarma",
     "drop_gpx_files": "GPX dosyalarını buraya bırak ya da göz atmak için tıkla",
     "gpx_only": "Yalnızca GPX dosyaları (otomatik bölüm algılamasıyla Maprika formatını destekler)",
     "analyze_files": "Dosyaları Analiz Et",

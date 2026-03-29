@@ -53,7 +53,6 @@ from flask import (
 from flask_caching import Cache
 from flask_compress import Compress
 from flaskext.autoversion import Autoversion
-from geopy.geocoders import Nominatim
 from PIL import Image
 from requests.adapters import HTTPAdapter, Retry
 from scgraph.geographs.marnet import marnet_geograph
@@ -208,6 +207,7 @@ from src.routing import forward_routing_core
 
 app = Flask(__name__)
 start_email_listener(app)
+
 app.config['DEBUG'] = True
 Compress(app)
 app.autoversion = True
@@ -1416,21 +1416,15 @@ def new_ticket(username):
 
 
 def getAddressFromCoords(lat, lng):
-    geolocator = Nominatim(user_agent="Trainlog")
-    details = geolocator.reverse(
-        (lat, lng),
-        timeout=10,
-        addressdetails=True,  # Get detailed address components
-    ).raw["address"]
+    response_json = photonRequest("/reverse", {"lon": lng, "lat": lat, "lang": "en"})
 
-    # Extract specific parts of the address
-    country_code = details.get("country_code", "").upper()  # Get country code
-    city = details.get(
-        "city", details.get("town", details.get("village", ""))
-    )  # Get city/town/village
-    suburb = details.get(
-        "neighbourhood", details.get("suburb", "")
-    )  # Get suburb or neighborhood
+    if response_json is None or not response_json.get("features"):
+        return ""
+
+    props = response_json["features"][0]["properties"]
+    country_code = props.get("countrycode", "").upper()
+    city = props.get("city") or props.get("county") or ""
+    suburb = props.get("suburb") or props.get("district") or ""
 
     flag = get_flag_emoji(country_code)
     return f"{flag} {city}" + (f" - {suburb}" if suburb else "")
@@ -1577,11 +1571,32 @@ def handle_gpx_upload(username, source):
 @app.route("/u/<username>/upload_gpx")
 @login_required
 def upload_gpx(username):
+    user_lang = lang[session["userinfo"]["lang"]]
+    trip_types = {
+        "train": user_lang["train"],
+        "tram": user_lang["tram"],
+        "metro": user_lang["metro"],
+        "funicular": user_lang["funicular"],
+        "rail": user_lang["rail"],
+        "bus": user_lang["bus"],
+        "ferry": user_lang["ferry"],
+        "car": user_lang["car"],
+        "cycle": user_lang["cycle"],
+        "scooter": user_lang["scooter"],
+        "walk": user_lang["walk"],
+        "aerialway": user_lang["aerialway"],
+        "ski": user_lang["ski"],
+        "other": user_lang["other"],
+        "air": user_lang["air"],
+        "helicopter": user_lang["helicopter"],
+    }
     return render_template(
         "upload_gpx.html",
-        title=lang[session["userinfo"]["lang"]]["upload_gpx_files"],
+        title=user_lang["upload_gpx_files"],
         username=username,
-        **lang[session["userinfo"]["lang"]],
+        trip_types=trip_types,
+        l=user_lang,
+        **user_lang,
         **session["userinfo"],
     )
 
@@ -2006,35 +2021,7 @@ def parse_maprika_filename(filename):
 @app.route("/u/<username>/upload_gpx_advanced")
 @login_required
 def upload_gpx_advanced(username):
-    """Display batch GPX upload interface"""
-    trip_types = {
-        "train": lang[session["userinfo"]["lang"]]["train"],
-        "tram": lang[session["userinfo"]["lang"]]["tram"],
-        "metro": lang[session["userinfo"]["lang"]]["metro"],
-        "funicular": lang[session["userinfo"]["lang"]]["funicular"],
-        "rail": lang[session["userinfo"]["lang"]]["rail"],
-        "bus": lang[session["userinfo"]["lang"]]["bus"],
-        "ferry": lang[session["userinfo"]["lang"]]["ferry"],
-        "car": lang[session["userinfo"]["lang"]]["car"],
-        "cycle": lang[session["userinfo"]["lang"]]["cycle"],
-        "scooter": lang[session["userinfo"]["lang"]]["scooter"],
-        "walk": lang[session["userinfo"]["lang"]]["walk"],
-        "aerialway": lang[session["userinfo"]["lang"]]["aerialway"],
-        "ski": lang[session["userinfo"]["lang"]]["ski"],
-        "other": lang[session["userinfo"]["lang"]]["other"],
-        "air": lang[session["userinfo"]["lang"]]["air"],
-        "helicopter": lang[session["userinfo"]["lang"]]["helicopter"],
-    }
-
-    return render_template(
-        "upload_gpx_advanced.html",
-        title=lang[session["userinfo"]["lang"]].get("advanced_gpx_import", "Batch GPX Upload"),
-        username=username,
-        trip_types=trip_types,
-        l=lang[session["userinfo"]["lang"]],
-        **lang[session["userinfo"]["lang"]],
-        **session["userinfo"],
-    )
+    return redirect(url_for("upload_gpx", username=username))
 
 
 @app.route("/u/<username>/parse_gpx_advanced", methods=["POST"])

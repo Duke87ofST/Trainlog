@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Choisissez le type de trajet pour ce fichier GPX :",
     "failed_to_save_trip": "Échec de l'enregistrement du trajet à partir du GPX.",
     "trip_saved_successfully": "Trajet enregistré avec succès !",
-    "advanced_gpx_import": "Importation GPX avancée",
     "drop_gpx_files": "Déposez les fichiers GPX ici ou cliquez pour parcourir",
     "gpx_only": "Fichiers GPX uniquement (prend en charge le format Maprika avec détection automatique des segments)",
     "analyze_files": "Analyser les fichiers",

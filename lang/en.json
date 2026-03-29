@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Choose the type of trip for this GPX file:",
     "failed_to_save_trip": "Failed to save trip from GPX.",
     "trip_saved_successfully": "Trip saved successfully!",
-    "advanced_gpx_import": "Advanced GPX Import",
     "drop_gpx_files": "Drop GPX files here or click to browse",
     "gpx_only": "GPX files only (supports Maprika format with automatic leg detection)",
     "analyze_files": "Analyze Files",

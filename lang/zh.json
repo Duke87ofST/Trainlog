@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "选择此GPX文件的行程类型：",
     "failed_to_save_trip": "从GPX保存行程失败。",
     "trip_saved_successfully": "行程保存成功！",
-    "advanced_gpx_import": "高级 GPX 导入",
     "drop_gpx_files": "将 GPX 文件拖到此处或点击以浏览",
     "gpx_only": "仅限 GPX 文件（支持带有自动航段检测的 Maprika 格式）",
     "analyze_files": "分析文件",

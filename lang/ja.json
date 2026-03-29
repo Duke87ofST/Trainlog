@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "このGPXファイルの記録タイプを選択してください:",
     "failed_to_save_trip": "GPXから記録の保存に失敗しました。",
     "trip_saved_successfully": "記録が正常に保存されました!",
-    "advanced_gpx_import": "高度な GPX インポート",
     "drop_gpx_files": "ここに GPX ファイルをドロップするか、クリックして参照してください",
     "gpx_only": "GPX ファイルのみ（自動区間検出を備えた Maprika 形式をサポート）",
     "analyze_files": "ファイルを分析",

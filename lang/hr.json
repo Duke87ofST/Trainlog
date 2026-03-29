@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Odaberite tip putovanja za ovu GPX datoteku:",
     "failed_to_save_trip": "Spremanje putovanja iz GPX-a nije uspjelo.",
     "trip_saved_successfully": "Putovanje uspješno spremljeno!",
-    "advanced_gpx_import": "Napredni GPX uvoz",
     "drop_gpx_files": "Otpusti GPX datoteke ovdje ili klikni za pregledavanje",
     "gpx_only": "Samo GPX datoteke (podržava Maprika format s automatskim prepoznavanjem dionica)",
     "analyze_files": "Analiziraj datoteke",

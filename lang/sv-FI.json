@@ -477,7 +477,6 @@
     "select_trip_type_instruction": "Välj typ av resa för denna GPX-fil:",
     "failed_to_save_trip": "Det gick inte att spara resa från GPX.",
     "trip_saved_successfully": "Resa sparad framgångsrikt!",
-    "advanced_gpx_import": "Avancerad GPX-import",
     "drop_gpx_files": "Släpp GPX-filer här eller klicka för att bläddra",
     "gpx_only": "Endast GPX-filer (stöder Maprika-format med automatisk segmentdetektion)",
     "analyze_files": "Analysera filer",
