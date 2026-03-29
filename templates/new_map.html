@@ -100,7 +100,7 @@
             </div>
             <div class="legend-item">
                 <div class="legend-line" style="background-color: #00d084;"></div>
-                <span><i class="fa-solid fa-motorcycle"></i> {{ scooter }}</span>
+                <span><i class="bi bi-scooter"></i> {{ scooter }}</span>
             </div>
             <div class="legend-item">
                 <div class="legend-line" style="background-color: #6495ed;"></div>
@@ -220,7 +220,7 @@ function initializeTransportFilters() {
         filterItem.innerHTML = `
             <input type="checkbox" id="${type.id}Filter" checked onchange="toggleTransportType('${type.id}')">
             <span class="filter-icon" style="color: ${type.color};">
-                <i class="fa-solid ${type.icon}"></i>
+                <i class="${type.iconClass || 'fa-solid'} ${type.icon}"></i>
             </span>
             <span class="filter-label">${transportTypeLabels[type.id]}</span>
         `;
