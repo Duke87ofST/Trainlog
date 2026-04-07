@@ -3910,7 +3910,29 @@ def edit_translations(langid):
 @public_required
 def public(username):
     """
-    Public home
+    Public home (MapLibre)
+    """
+    user = User.query.filter_by(username=username).first()
+    tileserver = user.tileserver if user else "default"
+    globe = user.globe if user else False
+    return render_template(
+        "new_map.html",
+        nav="bootstrap/public_nav.html",
+        title=lang[session["userinfo"]["lang"]]["map"],
+        username=username,
+        public=True,
+        tileserver=tileserver,
+        globe=globe,
+        **lang[session["userinfo"]["lang"]],
+        **session["userinfo"],
+    )
+
+
+@app.route("/public/<username>/leaflet")
+@public_required
+def public_leaflet(username):
+    """
+    Public home (Leaflet fallback)
     """
     return render_template(
         "map.html",
@@ -9833,12 +9855,12 @@ def get_all_current_trips():
 @app.route("/live_map")
 def live_map():
     """
-    Shows the global map of all public users currently traveling
+    Shows the global map of all public users currently traveling (MapLibre)
     """
     username = getUser()
     user = User.query.filter_by(username=username).first() if username else None
     return render_template(
-        "public/current_global.html",
+        "public/current_global_maplibre.html",
         username=username,
         logosList=listOperatorsLogos(),
         translations=lang[session["userinfo"]["lang"]],
@@ -9850,15 +9872,15 @@ def live_map():
         title=lang[session["userinfo"]["lang"]]["live_map"],
     )
 
-@app.route("/new_live_map")
-def new_live_map():
+@app.route("/live_map/leaflet")
+def live_map_leaflet():
     """
-    MapLibre version of the live map (alongside the classic Leaflet one)
+    Leaflet fallback for the live map
     """
     username = getUser()
     user = User.query.filter_by(username=username).first() if username else None
     return render_template(
-        "public/current_global_maplibre.html",
+        "public/current_global.html",
         username=username,
         logosList=listOperatorsLogos(),
         translations=lang[session["userinfo"]["lang"]],
