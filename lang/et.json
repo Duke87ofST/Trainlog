@@ -929,5 +929,6 @@
     "tl_days_abroad_per_year_title": "Välismaal veedetud päevad aastas",
     "tl_residence": "Elukoht",
     "tl_days_abroad_col": "Päevad välismaal",
-    "tl_scroll_hint": "Kerige / näpistage suumimiseks  ·  lohistage liikumiseks"
+    "tl_scroll_hint": "Kerige / näpistage suumimiseks  ·  lohistage liikumiseks",
+    "showMore": "näita rohkem"
 }

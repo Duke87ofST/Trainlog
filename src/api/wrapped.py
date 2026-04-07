@@ -24,10 +24,14 @@ MONTH_NAMES = {
 
 # Distance comparisons in km
 DISTANCE_COMPARISONS = [
-    {"name": "Paris → New York", "km": 5837, "emoji": "🗽"},
-    {"name": "London → Tokyo", "km": 9571, "emoji": "🗼"},
-    {"name": "Earth's circumference", "km": 40075, "emoji": "🌍"},
-    {"name": "Earth to Moon", "km": 384400, "emoji": "🌙"},
+    {"name": "Paris → Tokyo",        "km": 9717,   "emoji": "🗼"},
+    {"name": "London → Sydney",      "km": 16993,  "emoji": "🦘"},
+    {"name": "Cairo → Cape Town",    "km": 8909,   "emoji": "🌍"},
+    {"name": "Lisbon → Singapore",   "km": 11010,  "emoji": "🦁"},
+    {"name": "Moscow → Beijing",     "km": 5800,   "emoji": "🏯"},
+    {"name": "Oslo → Johannesburg",  "km": 10577,  "emoji": "🦒"},
+    {"name": "Earth's circumference","km": 40075,  "emoji": "🌏"},
+    {"name": "Earth → Moon",         "km": 384400, "emoji": "🌙"},
 ]
 
 

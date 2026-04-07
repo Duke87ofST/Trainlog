@@ -929,5 +929,6 @@
     "tl_days_abroad_per_year_title": "연간 해외 체류 일수",
     "tl_residence": "거주지",
     "tl_days_abroad_col": "해외 일수",
-    "tl_scroll_hint": "스크롤 / 핀치하여 확대  ·  드래그하여 이동"
+    "tl_scroll_hint": "스크롤 / 핀치하여 확대  ·  드래그하여 이동",
+    "showMore": "더 보기"
 }

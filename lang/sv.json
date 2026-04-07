@@ -929,5 +929,6 @@
     "tl_days_abroad_per_year_title": "Dagar tillbringade utomlands per år",
     "tl_residence": "Bostad",
     "tl_days_abroad_col": "Dagar utomlands",
-    "tl_scroll_hint": "Skrolla / nyp för att zooma  ·  dra för att panorera"
+    "tl_scroll_hint": "Skrolla / nyp för att zooma  ·  dra för att panorera",
+    "showMore": "visa mer"
 }
