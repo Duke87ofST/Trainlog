@@ -412,7 +412,7 @@
 
 <script>
 window.featureRequestsConfig = {{ {
-    "votersUrlTemplate": (url_for("feature_requests.feature_request_voters", request_id="__ID__") if username else "/feature_requests/__ID__/voters")
+    "votersUrlTemplate": (url_for("feature_requests.feature_request_voters", request_id=0).rsplit('0', 1) | join('__ID__') if username else "/feature_requests/__ID__/voters")
 } | tojson }};
 window.featureRequestsI18n = {{ {
     "upvoters": feature_requests_upvoters,
