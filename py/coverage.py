@@ -34,7 +34,12 @@ def has_coverage_file_immediate(cc):
 
 def get_coverage_geojson_dict_immediate(cc):
     with open(get_coverage_file_path(cc), "r") as file:
-        return json.load(file)
+        data = json.load(file)
+    if "total_area_m2" not in data:
+        data["total_area_m2"] = sum(
+            f.get("properties", {}).get("area_m2", 0) for f in data.get("features", [])
+        )
+    return data
 
 
 def get_coverage_region_file_paths(cc):
@@ -74,7 +79,9 @@ def get_coverage_geojson_dict_from_regions(cc):
             raise ValueError(f"Mismatching crs in region files for {cc}")
 
         region_code = os.path.splitext(os.path.basename(file_path))[0]
-        total_area_m2 += geojson_data.get("total_area_m2", 0)
+        total_area_m2 += geojson_data.get("total_area_m2") or sum(
+            f.get("properties", {}).get("area_m2", 0) for f in geojson_data.get("features", [])
+        )
 
         for feature in geojson_data.get("features", []):
             properties = feature.get("properties", {})
