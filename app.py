@@ -7043,12 +7043,11 @@ def export(username):
                 "SELECT * FROM trip WHERE username = :username", {"username": username}
             )
         else:
-            query = "SELECT * FROM trip WHERE username = '{username}' AND uid IN ({requestedTrips})"
+            query = "SELECT * FROM trip WHERE username = ? AND uid IN ({requestedTrips})"
             formattedQuery = query.format(
-                username=username,
                 requestedTrips=", ".join(("?",) * len(requestedTrips.split(","))),
             )
-            cursor.execute(formattedQuery, requestedTrips.split(","))
+            cursor.execute(formattedQuery, [username] + requestedTrips.split(","))
         rows = cursor.fetchall()
         cw.writerow(
             [i[0] for i in cursor.description if i[0] != "ticket_id"] + ["path"]
